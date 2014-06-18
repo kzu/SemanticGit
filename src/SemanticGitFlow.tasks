@@ -1,0 +1,245 @@
+﻿<!--
+   Copyright 2014 Daniel Cazzulino
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+
+	<!--
+    ============================================================
+              GetSemanticVersion Task
+			  
+	Provides http://semver.org/ compatible version number
+	from gitflow tagged repositories, making it easy to 
+	have ongoing pre-release software that has easily 
+	reproducible builds.
+	
+    [IN]
+	Tag        - The tag returned by git describe -tags
+
+    [OUT]
+	Major      - The MAJOR component of the semantic version tag
+	Minor      - The MINOR component of the semantic version tag
+	Patch      - The PATCH component of the semantic version tag
+	Release    - The optional release fragment, which contains 
+                 the hash of the last commit after tagging (none 
+                 for the release immediate after tagging). 
+                    
+                 i.e.:
+                 
+                 "1.0.0" = Repo HEAD is at the tag 1.0.0 itself, 
+                 with zero commits after the tag.
+                 
+                 "1.0.1-928e945" = Repo is a pre-release with 
+                 one commit after the "1.0.0" release, with hash 
+                 928e945.
+	============================================================
+	-->
+
+	<UsingTask
+		TaskName="GetSemanticVersion"
+		TaskFactory="CodeTaskFactory"
+		AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll">
+
+		<ParameterGroup>
+			<Tag Required="true"/>
+			<Major Output="true"/>
+			<Minor Output="true"/>
+			<Patch Output="true"/>
+			<Release Output="true"/>
+		</ParameterGroup>
+
+		<Task>
+			<Using Namespace="System.Text.RegularExpressions"/>
+			<Code Type="Fragment" Language="cs">
+				<![CDATA[
+			
+
+			var semanticGitExpression = @"^v?(?<Major>\d+)\.(?<Minor>\d+)\.(?<Patch>\d+)(-(?<Revision>\d+)-g(?<Commit>[0-9a-z]+))?$";
+
+			var match = Regex.Match(Tag, semanticGitExpression, RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
+
+			if (!match.Success)
+			{
+				Log.LogError("Current head tag {0} does not comply to semantic versioning. Must be MAYOR.MINOR.PATCH[-COMMITS-gHASH].", Tag);
+				return false;
+			}
+
+			Major = match.Groups["Major"].Value;
+			Minor = match.Groups["Minor"].Value;
+
+			var patch = int.Parse(match.Groups["Patch"].Value);
+
+			// If there are commits on top, we add them to the patch number.
+			if (match.Groups["Revision"].Success)
+				patch += int.Parse(match.Groups["Revision"].Value);
+
+			Patch = patch.ToString();
+
+			Release = match.Groups["Commit"].Success ?
+				"-" + match.Groups["Commit"].Value : "";
+
+			
+]]>
+			</Code>
+		</Task>
+
+	</UsingTask>
+
+
+	<!--
+    ============================================================
+              ParseTags Task
+	
+        [IN]
+        Input	   - The input text to parse the tags from, from 
+		             a previous run of git.
+		HeadTag    - The current head tag.
+					 
+        [OUT]
+		Tags       - An item list containing items with:
+		             ItemSpec = Tag
+					     Text = Tag description
+						 Range = The commit range for the tag 
+						         WRT the previous tag.
+	============================================================
+	-->
+
+	<UsingTask
+		TaskName="ParseSemanticTags"
+		TaskFactory="CodeTaskFactory"
+		AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll">
+
+		<ParameterGroup>
+			<Input Required="true"/>
+			<HeadTag Required="true"/>
+			<Tags Output="true"/>
+		</ParameterGroup>
+
+		<Task>
+			<Using Namespace="System"/>
+			<Using Namespace="System.Collections.Generic"/>
+			<Using Namespace="System.Linq"/>
+			<Using Namespace="System.Text.RegularExpressions"/>
+			<Code Type="Fragment" Language="cs">
+				<![CDATA[
+			
+
+			var semanticGitExpression = new Regex(@"^(?<Prefix>v)?(?<Major>\d+)\.(?<Minor>\d+)\.(?<Patch>\d+)(-(?<Revision>\d+)-g(?<Commit>[0-9a-z]+))?$",
+				RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
+
+			var allTags = Input
+				.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+				.Select(line => line.IndexOf(' ') == -1 ?
+					new[] { line, "" } :
+					new[] { 
+						line.Substring(0, line.IndexOf(' ')), 
+						line.Substring(line.IndexOf(' ') + 1).Trim()
+					})
+				.Select(tag => new
+				{
+					Item = new TaskItem(tag[0], new Dictionary<string, string> 
+					{ 
+						{ "Title", tag[0] }, 
+						{ "Description", tag[1].Length == 0 ? "" : "- " + tag[1] },
+						{ "IsHead", "false" },
+					}),
+					Match = semanticGitExpression.Match(tag[0])
+				})
+				.Select(tag =>
+				{
+					tag.Item.SetMetadata("IsSemantic", tag.Match.Success.ToString().ToLowerInvariant());
+					if (tag.Match.Success)
+					{
+						// Set the version metadata on all tags to allow proper sorting.
+						tag.Item.SetMetadata("Version",
+							tag.Match.Groups["Major"].Value + "." +
+							tag.Match.Groups["Minor"].Value + "." +
+							tag.Match.Groups["Patch"].Value);
+					}
+
+					return tag.Item;
+				})
+				.ToList();
+
+			// Warn and skip non-semantic tags.
+			var nonSemanticTags = allTags.Where(t => t.GetMetadata("IsSemantic") == "false").Select(t => t.ItemSpec).ToArray();
+			if (nonSemanticTags.Length != 0)
+			{
+				Log.LogWarning("The following tags are not semantic and will be skipped from parsing: {0}", string.Join(", ", nonSemanticTags));
+			}
+
+			allTags.RemoveAll(t => t.GetMetadata("IsSemantic") == "false");
+
+			// Annotate the revision range for each tag.
+			for (int i = 1; i < allTags.Count; i++)
+			{
+				allTags[i].SetMetadata("Range", allTags[i - 1].ItemSpec + ".." + allTags[i].ItemSpec);
+			}
+
+			// The oldest tag has no range, it effectively contains all commits 
+			// up to its definition.
+			if (allTags.Count > 0)
+				allTags[0].SetMetadata("Range", allTags[0].ItemSpec);
+
+			// If the head tag doesn't exist in the list of tags, 
+			// it means there are new commits on top of the newest tag, 
+			// so we add it as a new pseudo tag, HEAD
+			if (!allTags.Any(t => t.ItemSpec == HeadTag))
+			{
+				var tagSpec = HeadTag;
+				var match = semanticGitExpression.Match(HeadTag);
+				if (match.Success)
+				{
+					var patch = int.Parse(match.Groups["Patch"].Value);
+
+					// If there are commits on top, we add them to the patch number.
+					if (match.Groups["Revision"].Success)
+						patch += int.Parse(match.Groups["Revision"].Value);
+
+					var release = match.Groups["Commit"].Success ?
+						"-" + match.Groups["Commit"].Value : "";
+
+					var version = match.Groups["Major"].Value + "." + match.Groups["Minor"].Value + "." + patch;
+					var parentTag = HeadTag.Substring(0, HeadTag.IndexOf('-'));
+					var parent = allTags.First(t => t.ItemSpec == parentTag);
+					var tag = new TaskItem(HeadTag, new Dictionary<string, string> 
+					{ 
+						{ "Title", match.Groups["Prefix"].Value + version + release },
+						{ "Description", "- HEAD" },
+						{ "IsHead", "true" },
+						{ "IsSemantic", "true"}, 
+						{ "Version", version },
+						{ "Range", parent.ItemSpec + ".." + HeadTag },
+					});
+
+					allTags.Add(tag);
+				}
+				else
+				{
+					Log.LogWarning("Current head tag is not semantic and will be skipped from tag parsing: {0}", HeadTag);
+				}
+			}
+
+			// Finally, sort by version.
+			Tags = allTags.OrderByDescending(t => t.GetMetadata("Version")).ToArray();
+
+			
+]]>
+			</Code>
+		</Task>
+
+	</UsingTask>
+
+</Project>
