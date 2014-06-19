@@ -131,7 +131,7 @@
 				var parent = allTags.First(t => t.ItemSpec == parentTag);
 				var tag = new TaskItem(HeadTag, new Dictionary<string, string> 
 					{ 
-						{ "Title", match.Groups["Prefix"].Value + headVersion + headRelease },
+						{ "Title", match.Groups["Prefix"].Value + headVersion },
 						{ "Description", "- HEAD" },
 						{ "IsHead", "true" },
 						{ "IsSemantic", "true"}, 

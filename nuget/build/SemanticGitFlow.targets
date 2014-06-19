@@ -56,25 +56,12 @@
 		<!-- TODO: make this incremental -->
 		<WriteLinesToFile File="$(GitRoot)\$(ChangeLog).md" Overwrite="true" />
 
-		<CallTarget Targets="GenerateMarkdown" />
-
-		<Message Text="Generated GitHub linked markdown for repository base url $(GitHubUrl)." Importance="normal" />
-	</Target>
-
-	<!-- Target was split to batch per tag so we can detect what type of tag it is. -->
-	<Target Name="GenerateMarkdown" Inputs="@(_Tags)" Outputs="%(Identity)">
-		
-		<!-- Non-head tags are rendered with links to releases -->
 		<WriteLinesToFile File="$(GitRoot)\$(ChangeLog).md"
 						  Condition="'%(_Tags.Identity)' != '' AND '%(_Tags.IsHead)' == 'false'"
 						  Lines="## [%(_Tags.Title)]($(GitHubUrl)/releases/tag/%(_Tags.Title))
 %(_Tags.LinkedCommits)%0a" />
 
-		<!-- Head tag is a non-released one, so no link -->
-		<WriteLinesToFile File="$(GitRoot)\$(ChangeLog).md"
-						  Condition="'%(_Tags.Identity)' != '' AND '%(_Tags.IsHead)' == 'true'"
-						  Lines="## %(_Tags.Title)
-%(_Tags.LinkedCommits)%0a" />
+		<Message Text="Generated GitHub linked markdown for repository base url $(GitHubUrl)." Importance="normal" />
 	</Target>
 
 	<Target Name="GetVersion" DependsOnTargets="GetHead" Returns="$(_Major).$(_Minor).$(_Patch)$(_Release)">

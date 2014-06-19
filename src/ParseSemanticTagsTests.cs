@@ -85,7 +85,7 @@
 		}
 
 		[Fact]
-		public void when_head_has_commits_then_tag_has_title_semver()
+		public void when_head_has_commits_then_tag_has_title_version()
 		{
 			var task = new ParseSemanticTags
 			{
@@ -100,7 +100,26 @@
 
 			Assert.Equal(4, task.Tags.Length);
 			Assert.Equal("1.1.0-2-gfeee9ba", task.Tags[0].ItemSpec);
-			Assert.Equal("1.1.2-feee9ba", task.Tags[0].GetMetadata("Title"));
+			Assert.Equal("1.1.2", task.Tags[0].GetMetadata("Title"));
+		}
+
+		[Fact]
+		public void when_head_has_commits_then_tag_has_title_version_with_prefix()
+		{
+			var task = new ParseSemanticTags
+			{
+				BuildEngine = Mock.Of<IBuildEngine>(),
+				HeadTag = "v1.1.0-2-gfeee9ba",
+				Input = @"v1.0.0           Initial release of nothing.
+v1.0.1           New release test
+v1.1.0           Added simple task tests."
+			};
+
+			task.Execute();
+
+			Assert.Equal(4, task.Tags.Length);
+			Assert.Equal("v1.1.0-2-gfeee9ba", task.Tags[0].ItemSpec);
+			Assert.Equal("v1.1.2", task.Tags[0].GetMetadata("Title"));
 		}
 
 		[Fact]
@@ -119,7 +138,7 @@ v1.0.2           Added simple task tests."
 
 			Assert.Equal(4, task.Tags.Length);
 			Assert.Equal("v1.0.2-2-gfeee9ba", task.Tags[0].ItemSpec);
-			Assert.Equal("v1.0.4-feee9ba", task.Tags[0].GetMetadata("Title"));
+			Assert.Equal(4, new Version(task.Tags[0].GetMetadata("Version")).Build);
 		}
 
 		[Fact]
@@ -137,11 +156,11 @@ v1.0.0"
 			task.Execute();
 
 			Assert.Equal(4, task.Tags.Length);
-			Assert.Equal("v1.0.6-778787d", task.Tags[0].GetMetadata("Title"));
+			Assert.Equal("v1.0.6", task.Tags[0].GetMetadata("Title"));
 		}
 
 		[Fact]
-		public void when_head_has_commits_but_no_semver_then_skips_all_tags()
+		public void when_head__not_semver_then_fails()
 		{
 			var task = new ParseSemanticTags
 			{
@@ -152,9 +171,7 @@ JB
 ICS"
 			};
 
-			task.Execute();
-
-			Assert.Equal(0, task.Tags.Length);
+			Assert.False(task.Execute());
 		}
 
 		[Fact]
