@@ -34,29 +34,27 @@
 	
 	<Target Name="GenerateChangeLog"
 			DependsOnTargets="GenerateTextLog;GenerateMarkdownLog" />
-	
+
 	<Target Name="GenerateTextLog"
 			Inputs="$(GitRoot)\.git\HEAD;@(_Head)"
-			Outputs="$(GitRoot)\$(ChangeLog)">
-
-		<CallTarget Targets="GetTagCommits" />
+			Outputs="$(GitRoot)\$(ChangeLog)"
+			DependsOnTargets="GetTagCommits"><!-- This is suboptimal -->
 		
 		<!-- TODO: make this incremental -->
-		<WriteLinesToFile File="$(ChangeLog)" Overwrite="true" />
-		<WriteLinesToFile File="$(ChangeLog)" Lines="%(_Tags.Title)
-%(_Tags.Commits)%0a" Condition="'%(Identity)' != ''"/>
+		<WriteLinesToFile File="$(GitRoot)\$(ChangeLog)" Overwrite="true" />
+		<WriteLinesToFile File="$(GitRoot)\$(ChangeLog)" Lines="%(_Tags.Title)
+%(_Tags.Commits)%0a" Condition="'%(_Tags.Identity)' != ''"/>
 
 	</Target>
 
 	<Target Name="GenerateMarkdownLog"
 			Condition="'$(GitHubUrl)' != ''"
 			Inputs="$(GitRoot)\.git\HEAD;@(_Head)"
-			Outputs="$(GitRoot)\$(ChangeLog).md">
-
-		<CallTarget Targets="GetTagCommits" />
+			Outputs="$(GitRoot)\$(ChangeLog).md"
+			DependsOnTargets="GetTagCommits"><!-- This is suboptimal -->
 
 		<!-- TODO: make this incremental -->
-		<WriteLinesToFile File="$(ChangeLog).md" Overwrite="true" />
+		<WriteLinesToFile File="$(GitRoot)\$(ChangeLog).md" Overwrite="true" />
 
 		<CallTarget Targets="GenerateMarkdown" />
 
@@ -67,13 +65,13 @@
 	<Target Name="GenerateMarkdown" Inputs="@(_Tags)" Outputs="%(Identity)">
 		
 		<!-- Non-head tags are rendered with links to releases -->
-		<WriteLinesToFile File="$(ChangeLog).md"
+		<WriteLinesToFile File="$(GitRoot)\$(ChangeLog).md"
 						  Condition="'%(_Tags.Identity)' != '' AND '%(_Tags.IsHead)' == 'false'"
 						  Lines="## [%(_Tags.Title)]($(GitHubUrl)/releases/tag/%(_Tags.Title))
 %(_Tags.LinkedCommits)%0a" />
 
 		<!-- Head tag is a non-released one, so no link -->
-		<WriteLinesToFile File="$(ChangeLog).md"
+		<WriteLinesToFile File="$(GitRoot)\$(ChangeLog).md"
 						  Condition="'%(_Tags.Identity)' != '' AND '%(_Tags.IsHead)' == 'true'"
 						  Lines="## %(_Tags.Title)
 %(_Tags.LinkedCommits)%0a" />
@@ -113,7 +111,9 @@
 
 	</Target>
 	
-	<Target Name="GetTagCommits" Inputs="@(_Tags)" Outputs="%(Identity)" DependsOnTargets="GetTags">
+	<Target Name="GetTagCommits" Inputs="@(_Tags)" Outputs="%(Identity)" 
+			DependsOnTargets="GetTags"
+			Returns="@(_Tags)">
 
 		<RunGit Exe='$(GitExe)' Args='log %(_Tags.Range) --pretty="$(CommitFormat)"' WorkingDir='$(MSBuildProjectDirectory)'>
 			<Output TaskParameter="Output" PropertyName="_CommitLog" />
