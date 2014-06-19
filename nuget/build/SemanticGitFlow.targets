@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Copyright 2014 Daniel Cazzulino
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<PropertyGroup>
+		<BuildDependsOn>
+			GenerateAssemblyInfo;
+			$(BuildDependsOn);
+			GenerateChangeLog;
+		</BuildDependsOn>
+	</PropertyGroup>
+
+	<Import Project="SemanticGitFlow.tasks" />
+
+	<ItemGroup>
+		<_Head Include="$(GitRoot)\.git\HEAD;$(GitRoot)\.git\refs\heads\*.*" />
+	</ItemGroup>
+	
+	<Target Name="GenerateAssemblyInfo" DependsOnTargets="GetVersion" />
+	
+	<Target Name="GenerateChangeLog"
+			DependsOnTargets="GetTagCommits;GenerateTextLog;GenerateMarkdownLog" />
+	
+	<Target Name="GenerateTextLog"
+			Inputs="$(GitRoot)\.git\HEAD;@(_Head)"
+			Outputs="$(GitRoot)\$(ChangeLog)">
+
+		<!-- TODO: make this incremental -->
+		<WriteLinesToFile File="$(ChangeLog)" Overwrite="true" />
+		<WriteLinesToFile File="$(ChangeLog)" Lines="%(_Tags.Title)
+%(_Tags.Commits)%0a" Condition="'%(Identity)' != ''"/>
+
+	</Target>
+
+	<Target Name="GenerateMarkdownLog"
+			Condition="'$(GitHubUrl)' != ''"
+			Inputs="$(GitRoot)\.git\HEAD;@(_Head)"
+			Outputs="$(GitRoot)\$(ChangeLog).md">
+
+		<!-- TODO: make this incremental -->
+		<WriteLinesToFile File="$(ChangeLog).md" Overwrite="true" />
+
+		<CallTarget Targets="GenerateMarkdown" />
+
+		<Message Text="Generated GitHub linked markdown for repository base url $(GitHubUrl)." Importance="normal" />
+	</Target>
+
+	<!-- Target was split to batch per tag so we can detect what type of tag it is. -->
+	<Target Name="GenerateMarkdown" Inputs="@(_Tags)" Outputs="%(Identity)">
+		
+		<!-- Non-head tags are rendered with links to releases -->
+		<WriteLinesToFile File="$(ChangeLog).md"
+						  Condition="'%(_Tags.Identity)' != '' AND '%(_Tags.IsHead)' == 'false'"
+						  Lines="## [%(_Tags.Title)]($(GitHubUrl)/releases/tag/%(_Tags.Title))
+%(_Tags.LinkedCommits)%0a" />
+
+		<!-- Head tag is a non-released one, so no link -->
+		<WriteLinesToFile File="$(ChangeLog).md"
+						  Condition="'%(_Tags.Identity)' != '' AND '%(_Tags.IsHead)' == 'true'"
+						  Lines="## %(_Tags.Title)
+%(_Tags.LinkedCommits)%0a" />
+	</Target>
+
+	<Target Name="GetVersion" DependsOnTargets="GetHead" Returns="$(_Major).$(_Minor).$(_Patch)$(_Release)">
+		
+		<GetSemanticVersion Tag="$(_HeadTag)">
+			<Output TaskParameter="Major" PropertyName="_Major" />
+			<Output TaskParameter="Minor" PropertyName="_Minor" />
+			<Output TaskParameter="Patch" PropertyName="_Patch" />
+			<Output TaskParameter="Release" PropertyName="_Release" />
+		</GetSemanticVersion>
+
+		<Message Text="Determined current semantic version as $(_Major).$(_Minor).$(_Patch)$(_Release)"
+				 Importance="normal" />
+		
+	</Target>
+	
+	<Target Name="GetHead">
+
+		<RunGit Exe="$(GitExe)" Args="describe --tags" WorkingDir="$(MSBuildProjectDirectory)">
+			<Output TaskParameter="Output" PropertyName="_HeadTag" />
+		</RunGit>
+		
+	</Target>
+	
+	<Target Name="GetTags" DependsOnTargets="GetHead">
+		
+		<RunGit Exe="$(GitExe)" Args="tag -n1" WorkingDir="$(MSBuildProjectDirectory)">
+			<Output TaskParameter="Output" PropertyName="_TagOutput" />
+		</RunGit>
+
+		<ParseSemanticTags Input="$(_TagOutput)" HeadTag="$(_HeadTag)">
+			<Output TaskParameter="Tags" ItemName="_Tags" />
+		</ParseSemanticTags>
+
+	</Target>
+	
+	<Target Name="GetTagCommits" Inputs="@(_Tags)" Outputs="%(Identity)" DependsOnTargets="GetTags">
+
+		<RunGit Exe='$(GitExe)' Args='log %(_Tags.Range) --pretty="$(CommitFormat)"' WorkingDir='$(MSBuildProjectDirectory)'>
+			<Output TaskParameter="Output" PropertyName="_CommitLog" />
+		</RunGit>
+
+		<RegexReplace Input="$(_CommitLog)"
+					  Pattern="(\#(\d+))"
+					  Replacement="[$1]($(GitHubUrl)/issues/$2)"
+					  Condition="'$(GitHubUrl)' != ''">
+			<Output TaskParameter="Output" PropertyName="_LinkedCommitLog" />
+		</RegexReplace>
+		
+		<ItemGroup>
+			<_Tags>
+				<Commits>$(_CommitLog)</Commits>
+				<LinkedCommits>$(_LinkedCommitLog)</LinkedCommits>
+			</_Tags>
+		</ItemGroup>
+
+	</Target>
+
+</Project>

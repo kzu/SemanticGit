@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{825EC8
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{68082BD7-D596-4DFF-813A-1F60409A837A}"
 	ProjectSection(SolutionItems) = preProject
-		..\nuget\Readme.txt = ..\nuget\Readme.txt
+		..\nuget\ReleaseNotes.txt = ..\nuget\ReleaseNotes.txt
 		..\nuget\SemanticGitFlow.nuspec = ..\nuget\SemanticGitFlow.nuspec
 	EndProjectSection
 EndProject

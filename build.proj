@@ -63,7 +63,12 @@
 				 Value="$(ReleaseNotes)"
 				 Condition="'$(ReleaseNotes)' != ''" />
 
-		<Exec Command="&quot;$(NuGetCommand)&quot; pack -NoPackageAnalysis &quot;%(NuSpec.FullPath)&quot; -Version &quot;$(_Major).$(_Minor).$(_Patch)$(_Release)&quot;"
+		<Exec Command="&quot;$(NuGetCommand)&quot; pack -NoPackageAnalysis &quot;%(NuSpec.FullPath)&quot; -Version &quot;$(_Major).$(_Minor).$(_Patch)-pre&quot;"
+			  Condition="'$(_Release)' != ''"
+              ContinueOnError="false" />
+
+		<Exec Command="&quot;$(NuGetCommand)&quot; pack -NoPackageAnalysis &quot;%(NuSpec.FullPath)&quot; -Version &quot;$(_Major).$(_Minor).$(_Patch)&quot;"
+			  Condition="'$(_Release)' == ''"
               ContinueOnError="false" />
 	</Target>
 
