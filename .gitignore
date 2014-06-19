@@ -173,3 +173,4 @@ UpgradeLog*.htm
 # Microsoft Fakes
 FakesAssemblies/
 /src/*.t4properties
+/src/.nuget/NuGet.exe
