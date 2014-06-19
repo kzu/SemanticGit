@@ -3,7 +3,7 @@
 	using Microsoft.Build.Utilities;
 
 	#region Using
-	
+
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
@@ -27,7 +27,7 @@
 						 Range = The commit range for the tag 
 						         WRT the previous tag.
 	============================================================
-	*/ 
+	*/
 	public class ParseSemanticTags : Task
 	{
 		#region Input
@@ -38,7 +38,7 @@
 		#endregion
 
 		#region Output
-		
+
 		public Microsoft.Build.Framework.ITaskItem[] Tags { get; set; }
 
 		#endregion
@@ -49,6 +49,23 @@
 
 			var semanticGitExpression = new Regex(@"^(?<Prefix>v)?(?<Major>\d+)\.(?<Minor>\d+)\.(?<Patch>\d+)(-(?<Revision>\d+)-g(?<Commit>[0-9a-z]+))?$",
 				RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
+
+			var match = semanticGitExpression.Match(HeadTag);
+			if (!match.Success)
+			{
+				Log.LogError("Current head tag '{0}' does not comply with SemVer 2.0 specification (with optional 'v' prefix).", HeadTag);
+				return false;
+			}
+
+			var patch = int.Parse(match.Groups["Patch"].Value);
+
+			// If there are commits on top, we add them to the patch number.
+			if (match.Groups["Revision"].Success)
+				patch += int.Parse(match.Groups["Revision"].Value);
+
+			var headVersion = match.Groups["Major"].Value + "." + match.Groups["Minor"].Value + "." + patch;
+			var headRelease = match.Groups["Commit"].Success ?
+				"-" + match.Groups["Commit"].Value : "";
 
 			var allTags = Input
 				.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
@@ -110,41 +127,29 @@
 			if (!allTags.Any(t => t.ItemSpec == HeadTag))
 			{
 				var tagSpec = HeadTag;
-				var match = semanticGitExpression.Match(HeadTag);
-				if (match.Success)
-				{
-					var patch = int.Parse(match.Groups["Patch"].Value);
-
-					// If there are commits on top, we add them to the patch number.
-					if (match.Groups["Revision"].Success)
-						patch += int.Parse(match.Groups["Revision"].Value);
-
-					var release = match.Groups["Commit"].Success ?
-						"-" + match.Groups["Commit"].Value : "";
-
-					var version = match.Groups["Major"].Value + "." + match.Groups["Minor"].Value + "." + patch;
-					var parentTag = HeadTag.Substring(0, HeadTag.IndexOf('-'));
-					var parent = allTags.First(t => t.ItemSpec == parentTag);
-					var tag = new TaskItem(HeadTag, new Dictionary<string, string> 
+				var parentTag = HeadTag.Substring(0, HeadTag.IndexOf('-'));
+				var parent = allTags.First(t => t.ItemSpec == parentTag);
+				var tag = new TaskItem(HeadTag, new Dictionary<string, string> 
 					{ 
-						{ "Title", match.Groups["Prefix"].Value + version + release },
+						{ "Title", match.Groups["Prefix"].Value + headVersion + headRelease },
 						{ "Description", "- HEAD" },
 						{ "IsHead", "true" },
 						{ "IsSemantic", "true"}, 
-						{ "Version", version },
+						{ "Version", headVersion },
 						{ "Range", parent.ItemSpec + ".." + HeadTag },
 					});
 
-					allTags.Add(tag);
-				}
-				else
-				{
-					Log.LogWarning("Current head tag is not semantic and will be skipped from tag parsing: {0}", HeadTag);
-				}
+				allTags.Add(tag);
 			}
 
-			// Finally, sort by version.
-			Tags = allTags.OrderByDescending(t => t.GetMetadata("Version")).ToArray();
+			var version = new Version(headVersion);
+
+			Tags = allTags
+				// Only include tags that are smaller or equal than the current branch head
+				.Where(t => new Version(t.GetMetadata("Version")) <= version)
+				// Finally, sort by version.
+				.OrderByDescending(t => t.GetMetadata("Version"))
+				.ToArray();
 
 			#endregion
 

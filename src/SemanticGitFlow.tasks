@@ -124,7 +124,7 @@
 		<ParameterGroup>
 			<Input Required="true"/>
 			<HeadTag Required="true"/>
-			<Tags Output="true"/>
+			<Tags ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true"/>
 		</ParameterGroup>
 
 		<Task>
@@ -138,6 +138,23 @@
 
 			var semanticGitExpression = new Regex(@"^(?<Prefix>v)?(?<Major>\d+)\.(?<Minor>\d+)\.(?<Patch>\d+)(-(?<Revision>\d+)-g(?<Commit>[0-9a-z]+))?$",
 				RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
+
+			var match = semanticGitExpression.Match(HeadTag);
+			if (!match.Success)
+			{
+				Log.LogError("Current head tag '{0}' does not comply with SemVer 2.0 specification (with optional 'v' prefix).", HeadTag);
+				return false;
+			}
+
+			var patch = int.Parse(match.Groups["Patch"].Value);
+
+			// If there are commits on top, we add them to the patch number.
+			if (match.Groups["Revision"].Success)
+				patch += int.Parse(match.Groups["Revision"].Value);
+
+			var headVersion = match.Groups["Major"].Value + "." + match.Groups["Minor"].Value + "." + patch;
+			var headRelease = match.Groups["Commit"].Success ?
+				"-" + match.Groups["Commit"].Value : "";
 
 			var allTags = Input
 				.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
@@ -199,42 +216,144 @@
 			if (!allTags.Any(t => t.ItemSpec == HeadTag))
 			{
 				var tagSpec = HeadTag;
-				var match = semanticGitExpression.Match(HeadTag);
-				if (match.Success)
-				{
-					var patch = int.Parse(match.Groups["Patch"].Value);
-
-					// If there are commits on top, we add them to the patch number.
-					if (match.Groups["Revision"].Success)
-						patch += int.Parse(match.Groups["Revision"].Value);
-
-					var release = match.Groups["Commit"].Success ?
-						"-" + match.Groups["Commit"].Value : "";
-
-					var version = match.Groups["Major"].Value + "." + match.Groups["Minor"].Value + "." + patch;
-					var parentTag = HeadTag.Substring(0, HeadTag.IndexOf('-'));
-					var parent = allTags.First(t => t.ItemSpec == parentTag);
-					var tag = new TaskItem(HeadTag, new Dictionary<string, string> 
+				var parentTag = HeadTag.Substring(0, HeadTag.IndexOf('-'));
+				var parent = allTags.First(t => t.ItemSpec == parentTag);
+				var tag = new TaskItem(HeadTag, new Dictionary<string, string> 
 					{ 
-						{ "Title", match.Groups["Prefix"].Value + version + release },
+						{ "Title", match.Groups["Prefix"].Value + headVersion + headRelease },
 						{ "Description", "- HEAD" },
 						{ "IsHead", "true" },
 						{ "IsSemantic", "true"}, 
-						{ "Version", version },
+						{ "Version", headVersion },
 						{ "Range", parent.ItemSpec + ".." + HeadTag },
 					});
 
-					allTags.Add(tag);
-				}
-				else
-				{
-					Log.LogWarning("Current head tag is not semantic and will be skipped from tag parsing: {0}", HeadTag);
-				}
+				allTags.Add(tag);
 			}
 
-			// Finally, sort by version.
-			Tags = allTags.OrderByDescending(t => t.GetMetadata("Version")).ToArray();
+			var version = new Version(headVersion);
 
+			Tags = allTags
+				// Only include tags that are smaller or equal than the current branch head
+				.Where(t => new Version(t.GetMetadata("Version")) <= version)
+				// Finally, sort by version.
+				.OrderByDescending(t => t.GetMetadata("Version"))
+				.ToArray();
+
+			
+]]>
+			</Code>
+		</Task>
+
+	</UsingTask>
+
+
+	<!--
+    ============================================================
+              RunGit Task
+	
+        [IN]
+        Exe	       - The path to Git.exe
+		Args       - The command line arguments to git
+		WorkingDir - The base directory to use to run git.
+
+        [OUT]
+		Output     - The raw text output string from git.
+	============================================================
+	-->
+
+	<UsingTask
+		TaskName="RunGit"
+		TaskFactory="CodeTaskFactory"
+		AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll">
+
+		<ParameterGroup>
+			<Exe Required="true"/>
+			<Args Required="true"/>
+			<WorkingDir Required="true"/>
+			<Output Output="true"/>
+		</ParameterGroup>
+
+		<Task>
+			<Using Namespace="System.Diagnostics"/>
+			<Code Type="Fragment" Language="cs">
+				<![CDATA[
+			
+
+			var psi = new ProcessStartInfo
+			{
+				CreateNoWindow = true,
+				UseShellExecute = false,
+				RedirectStandardOutput = true,
+				RedirectStandardError = true,
+				WorkingDirectory = WorkingDir,
+				FileName = Exe,
+				Arguments = Args
+			};
+
+			Log.LogMessage(MessageImportance.Low, "Executing: {0} {1}", Exe, Args);
+
+			var p = Process.Start(psi);
+			Output = p.StandardOutput.ReadToEnd().Trim();
+			Log.LogMessage(MessageImportance.Low, Output);
+
+			var errors = p.StandardError.ReadToEnd().Trim();
+			if (errors.Length > 0)
+			{
+				Log.LogError(errors);
+				return false;
+			}
+
+			
+]]>
+			</Code>
+		</Task>
+
+	</UsingTask>
+
+
+	<!--
+    ============================================================
+              RegexReplace Task
+			  
+	Performs regular expression-based replacements according 
+	to http://msdn.microsoft.com/en-us/library/e7f5w83z(v=vs.110).aspx and 
+	http://msdn.microsoft.com/en-us/library/ewy2t5e0(v=vs.110).aspx
+	
+    [IN]
+	Input         - The string to search for a match.
+	Pattern       - The regular expression pattern to match.
+	Replacement   - The replacement string.
+
+    [OUT]
+	Result        - A new string that is identical to the input 
+                    string, except that the replacement string takes 
+					the place of each matched string. If pattern is 
+					not matched in the current instance, the task 
+					returns the original Input unchanged.                    
+	============================================================
+	-->
+
+	<UsingTask
+		TaskName="RegexReplace"
+		TaskFactory="CodeTaskFactory"
+		AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll">
+
+		<ParameterGroup>
+			<Input Required="true"/>
+			<Pattern Required="true"/>
+			<Replacement Required="true"/>
+			<Output Output="true"/>
+		</ParameterGroup>
+
+		<Task>
+			<Using Namespace="System.Text.RegularExpressions"/>
+			<Code Type="Fragment" Language="cs">
+				<![CDATA[
+			
+
+			Output = Regex.Replace(Input, Pattern, Replacement);
+			
 			
 ]]>
 			</Code>

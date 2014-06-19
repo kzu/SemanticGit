@@ -233,5 +233,53 @@ BETA
 			Assert.Equal("1.1.1-928e945", task.FullVersion);
 		}
 
+		[Fact]
+		public void when_head_tag_smaller_than_newest_tag_then_newest_tags_skipped()
+		{
+			// This case happens when we are in the 2.0 release branch 
+			// and a 3.0 release has already shipped.
+			var task = new ParseSemanticTags
+			{
+				BuildEngine = Mock.Of<IBuildEngine>(),
+				HeadTag = "2.0.0",
+				Input = @"1.0.0
+1.1.0
+2.0.0
+3.0.0"
+			};
+
+			task.Execute();
+
+			Assert.Equal(3, task.Tags.Length);
+
+			Assert.Equal("2.0.0", task.Tags[0].ItemSpec);
+			Assert.Equal("1.1.0", task.Tags[1].ItemSpec);
+			Assert.Equal("1.0.0", task.Tags[2].ItemSpec);
+		}
+
+		[Fact]
+		public void when_head_tag_smaller_than_newest_tag_then_newest_tags_skipped_but_patch_included()
+		{
+			// This case happens when we are in the 2.0 release branch 
+			// and a 3.0 release has already shipped.
+			var task = new ParseSemanticTags
+			{
+				BuildEngine = Mock.Of<IBuildEngine>(),
+				HeadTag = "2.0.0-2-gasdfasdf",
+				Input = @"1.0.0
+1.1.0
+2.0.0
+3.0.0"
+			};
+
+			task.Execute();
+
+			Assert.Equal(4, task.Tags.Length);
+
+			Assert.Equal("2.0.0-2-gasdfasdf", task.Tags[0].ItemSpec);
+			Assert.Equal("2.0.0", task.Tags[1].ItemSpec);
+			Assert.Equal("1.1.0", task.Tags[2].ItemSpec);
+			Assert.Equal("1.0.0", task.Tags[3].ItemSpec);
+		}
 	}
 }

@@ -11,9 +11,10 @@
     <AssemblyName>SemanticGitFlow</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\LearnGit\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-	<DownloadNuGetExe>true</DownloadNuGetExe>
+    <DownloadNuGetExe>true</DownloadNuGetExe>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">.\</SolutionDir>
+    <NuGetPackageImportStamp>8beba9fe</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -58,7 +59,9 @@
     <Compile Include="ParseSemanticTags.cs" />
     <Compile Include="ParseSemanticTagsTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RegexReplace.cs" />
     <Compile Include="RegexTests.cs" />
+    <Compile Include="RunGit.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -82,12 +85,13 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+    <Error Condition="!Exists('packages\Clarius.TransformOnBuild.1.1.1\build\Clarius.TransformOnBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Clarius.TransformOnBuild.1.1.1\build\Clarius.TransformOnBuild.targets'))" />
   </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
+  <Import Project="packages\Clarius.TransformOnBuild.1.1.1\build\Clarius.TransformOnBuild.targets" Condition="Exists('packages\Clarius.TransformOnBuild.1.1.1\build\Clarius.TransformOnBuild.targets')" />
   <Target Name="AfterBuild">
+    <ItemGroup>
+      <_TextTransform Include="SemanticGitFlow.tt" />
+    </ItemGroup>
+    <Exec Command="&quot;$(_TransformExe)&quot; -out &quot;$(MSBuildProjectDirectory)\..\nuget\build\SemanticGitFlow.tasks&quot; &quot;%(_TextTransform.FullPath)&quot;" Condition="'%(_TextTransform.Identity)' != ''" />
   </Target>
-  -->
 </Project>

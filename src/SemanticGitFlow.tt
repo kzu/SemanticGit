@@ -7,7 +7,13 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ output extension=".tasks" #>
 <#
-    var taskFiles = new[] { "GetSemanticVersion.cs", "ParseSemanticTags.cs" };
+    var taskFiles = new[] 
+    { 
+        "GetSemanticVersion.cs", 
+        "ParseSemanticTags.cs",
+        "RunGit.cs",
+        "RegexReplace.cs",
+    };
 #>
 <!--
    Copyright 2014 Daniel Cazzulino
@@ -91,7 +97,7 @@
     foreach (var output in outputs)
     {
 #>
-			<<#= output.Name #> Output="true"/>
+			<<#= output.Name #><#= (output.Type != "string") ? (" ParameterType=\"" + output.Type + "\"") : ""  #> Output="true"/>
 <#
 	}
 #>
