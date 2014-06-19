@@ -33,12 +33,14 @@
 	<Target Name="GenerateAssemblyInfo" DependsOnTargets="GetVersion" />
 	
 	<Target Name="GenerateChangeLog"
-			DependsOnTargets="GetTagCommits;GenerateTextLog;GenerateMarkdownLog" />
+			DependsOnTargets="GenerateTextLog;GenerateMarkdownLog" />
 	
 	<Target Name="GenerateTextLog"
 			Inputs="$(GitRoot)\.git\HEAD;@(_Head)"
 			Outputs="$(GitRoot)\$(ChangeLog)">
 
+		<CallTarget Targets="GetTagCommits" />
+		
 		<!-- TODO: make this incremental -->
 		<WriteLinesToFile File="$(ChangeLog)" Overwrite="true" />
 		<WriteLinesToFile File="$(ChangeLog)" Lines="%(_Tags.Title)
@@ -50,6 +52,8 @@
 			Condition="'$(GitHubUrl)' != ''"
 			Inputs="$(GitRoot)\.git\HEAD;@(_Head)"
 			Outputs="$(GitRoot)\$(ChangeLog).md">
+
+		<CallTarget Targets="GetTagCommits" />
 
 		<!-- TODO: make this incremental -->
 		<WriteLinesToFile File="$(ChangeLog).md" Overwrite="true" />

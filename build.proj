@@ -23,15 +23,10 @@
 		<BuildRoot Condition="!HasTrailingSlash('$(BuildRoot)')">$(BuildRoot)\</BuildRoot>
 		<TrackFileAccess>false</TrackFileAccess>
 		<SolutionDir>$(BuildRoot)src\</SolutionDir>
+		<BuildPackage>true</BuildPackage>
 		<DownloadNuGetExe>true</DownloadNuGetExe>
 		<TargetDir>$(BuildRoot)</TargetDir>
 		<GitHubUrl>https://github.com/kzu/SemanticGitFlow</GitHubUrl>
-	</PropertyGroup>
-
-	<PropertyGroup>
-		<BuildDependsOn>
-			BuildPackages;
-		</BuildDependsOn>
 	</PropertyGroup>
 
 	<Import Project="src\.nuget\NuGet.targets"/>
@@ -45,7 +40,8 @@
 	
     <Target Name="Build" DependsOnTargets="$(BuildDependsOn)" />
 
-	<Target Name="BuildPackages" 
+	<!-- Redefined from NuGet.targets since we build differently -->
+	<Target Name="BuildPackage" 
 			Inputs="@(NuSpec)" 
 			Outputs="%(Identity)-BATCH" 
 			DependsOnTargets="CheckPrerequisites;RestorePackages;GetVersion">
