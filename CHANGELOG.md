@@ -1,4 +1,5 @@
-## [v0.2.2](https://github.com/kzu/SemanticGitFlow//releases/tag/v0.2.2)
+## [v0.2.3](https://github.com/kzu/SemanticGitFlow//releases/tag/v0.2.3)
+- Fix markdown to always contain pseudo tag.
 - Updated changelogs
 - Made changelog consistent whether a tag exists or not for Head
 
