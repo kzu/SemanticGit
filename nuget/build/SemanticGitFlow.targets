@@ -57,7 +57,7 @@
 		<WriteLinesToFile File="$(GitRoot)\$(ChangeLog).md" Overwrite="true" />
 
 		<WriteLinesToFile File="$(GitRoot)\$(ChangeLog).md"
-						  Condition="'%(_Tags.Identity)' != '' AND '%(_Tags.IsHead)' == 'false'"
+						  Condition="'%(_Tags.Identity)' != ''"
 						  Lines="## [%(_Tags.Title)]($(GitHubUrl)/releases/tag/%(_Tags.Title))
 %(_Tags.LinkedCommits)%0a" />
 

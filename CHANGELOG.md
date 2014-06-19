@@ -1,3 +1,7 @@
+## [v0.2.2](https://github.com/kzu/SemanticGitFlow//releases/tag/v0.2.2)
+- Updated changelogs
+- Made changelog consistent whether a tag exists or not for Head
+
 ## [v0.2.0](https://github.com/kzu/SemanticGitFlow//releases/tag/v0.2.0)
 - Updated generation of both versions of CHANGELOG
 - Override nuget targets rather than creating slightly different named one.
