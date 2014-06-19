@@ -26,7 +26,13 @@
     <iconUrl>https://raw2.github.com/kzu/SemanticGitFlow/master/icon/128.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Automatic changelog generation, version updating, etc., based on SemVer and GitFlow.</description>
-    <releaseNotes></releaseNotes>
+    <releaseNotes>Release Notes:
+
+v0.1.0
+
+* Basic functionality to generate semantically versioned commit logs
+* Generate GitHub-linked markdown with linked issues and releases/tags
+* Retrieve and parse current branch head version.</releaseNotes>
     <copyright>Copyright 2014</copyright>
     <tags>git semantic semver msbuild</tags>
   </metadata>
