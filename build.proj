@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Copyright 2014 Daniel Cazzulino
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<Project ToolsVersion="4.0"
+         DefaultTargets="Build"
+         xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<PropertyGroup>
+		<BuildRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), .gitignore))</BuildRoot>
+		<BuildRoot Condition="!HasTrailingSlash('$(BuildRoot)')">$(BuildRoot)\</BuildRoot>
+		<TrackFileAccess>false</TrackFileAccess>
+		<SolutionDir>$(BuildRoot)src\</SolutionDir>
+		<DownloadNuGetExe>true</DownloadNuGetExe>
+		<TargetDir>$(BuildRoot)</TargetDir>
+		<GitHubUrl>https://github.com/kzu/SemanticGitFlow</GitHubUrl>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<BuildDependsOn>
+			BuildPackages;
+		</BuildDependsOn>
+	</PropertyGroup>
+
+	<Import Project="src\.nuget\NuGet.targets"/>
+	<Import Project="nuget\build\SemanticGitFlow.props"/>
+	<Import Project="nuget\build\SemanticGitFlow.targets"/>
+
+	<ItemGroup>
+		<NuSpec Include="**\*.nuspec" />
+		<PackageConfig Include="**\packages.config" />
+	</ItemGroup>
+	
+    <Target Name="Build" DependsOnTargets="$(BuildDependsOn)" />
+
+	<Target Name="BuildPackages" 
+			Inputs="@(NuSpec)" 
+			Outputs="%(Identity)-BATCH" 
+			DependsOnTargets="CheckPrerequisites;RestorePackages;GetVersion">
+		<PropertyGroup>
+			<ReleaseNotesPath>%(NuSpec.RootDir)%(NuSpec.Directory)ReleaseNotes.txt</ReleaseNotesPath>
+			<ReleaseNotes Condition="Exists('$(ReleaseNotesPath)')">$([System.IO.File]::ReadAllText('$(ReleaseNotesPath)'))</ReleaseNotes>
+		</PropertyGroup>
+
+		<Message Text="Updating %(NuSpec.Filename)%(NuSpec.Extension) release notes from existing file"
+				 Condition="'$(ReleaseNotes)' != ''"
+				 Importance="normal" />
+
+		<XmlPoke XmlInputPath="@(NuSpec)" 
+				 Query="/package/metadata/releaseNotes" 
+				 Value="$(ReleaseNotes)"
+				 Condition="'$(ReleaseNotes)' != ''" />
+
+		<Exec Command="&quot;$(NuGetCommand)&quot; pack -NoPackageAnalysis &quot;%(NuSpec.FullPath)&quot; -Version &quot;$(_Major).$(_Minor).$(_Patch)$(_Release)&quot;"
+              ContinueOnError="false" />
+	</Target>
+
+	<!-- Redefined from NuGet.targets since we can restore any number of package config files. -->
+	<Target Name="RestorePackages" Condition="'@(PackageConfig)' != ''">
+		<Message Text="Restoring NuGet packages..." Importance="normal" />
+		<Exec Command="$(NuGetCommand) restore %(PackageConfig.FullPath) -NonInteractive -SolutionDir $(PaddedSolutionDir) -Verbosity quiet" />
+	</Target>
+
+	<PropertyGroup>
+		<_CommonProgramFiles>$(CommonProgramFiles(x86))</_CommonProgramFiles>
+		<_CommonProgramFiles Condition=" '$(_CommonProgramFiles)' == '' ">$(CommonProgramFiles)</_CommonProgramFiles>
+		<TextTransformPath Condition="'$(TextTransformPath)' == ''">$(_CommonProgramFiles)\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\TextTransform.exe</TextTransformPath>
+		<!-- Initial default value -->
+		<_TransformExe>$(TextTransformPath)</_TransformExe>
+		<!-- Cascading probing if file not found -->
+		<_TransformExe Condition="!Exists('$(_TransformExe)')">$(_CommonProgramFiles)\Microsoft Shared\TextTemplating\10.0\TextTransform.exe"</_TransformExe>
+		<_TransformExe Condition="!Exists('$(_TransformExe)')">$(_CommonProgramFiles)\Microsoft Shared\TextTemplating\11.0\TextTransform.exe"</_TransformExe>
+		<_TransformExe Condition="!Exists('$(_TransformExe)')">$(_CommonProgramFiles)\Microsoft Shared\TextTemplating\12.0\TextTransform.exe"</_TransformExe>
+		<!-- Future proof 'til VS2013+2 -->
+		<_TransformExe Condition="!Exists('$(_TransformExe)')">$(_CommonProgramFiles)\Microsoft Shared\TextTemplating\13.0\TextTransform.exe"</_TransformExe>
+		<_TransformExe Condition="!Exists('$(_TransformExe)')">$(_CommonProgramFiles)\Microsoft Shared\TextTemplating\14.0\TextTransform.exe"</_TransformExe>
+	</PropertyGroup>
+
+</Project>
