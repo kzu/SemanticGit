@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Xunit;
-
-namespace SemanticGitFlow
+﻿namespace SemanticGitFlow
 {
+	using System;
+	using System.Collections.Generic;
+	using System.IO;
+	using System.Linq;
+	using System.Text;
+	using System.Text.RegularExpressions;
+	using System.Threading.Tasks;
+	using Xunit;
+
 	public class RegexTests
 	{
 		[Fact]
@@ -28,7 +28,7 @@ namespace SemanticGitFlow
 		public void when_parsing_usings_then_can_retrieve_existing()
 		{
 			var source = File.ReadAllText(@"..\..\GetSemanticVersion.cs");
-			
+
 			var usingExpr = @"\#region Using(?<using>[^\#]+)#endregion";
 
 			Assert.True(Regex.IsMatch(source, usingExpr, RegexOptions.Singleline));
@@ -49,7 +49,7 @@ namespace SemanticGitFlow
 		public void when_getting_documentation_then_can_retrieve_it()
 		{
 			var source = File.ReadAllText(@"..\..\GetSemanticVersion.cs");
-			
+
 			var docExpr = @"\/\*(?<doc>.+)\*\/";
 
 			Assert.True(Regex.IsMatch(source, docExpr, RegexOptions.Singleline));
@@ -64,7 +64,7 @@ namespace SemanticGitFlow
 		public void when_parsing_inputs_then_can_retrieve_properties()
 		{
 			var source = File.ReadAllText(@"..\..\GetSemanticVersion.cs");
-			
+
 			var inputExpr = @"\#region Input(?<input>[^\#]+)#endregion";
 
 			Assert.True(Regex.IsMatch(source, inputExpr, RegexOptions.Singleline));
@@ -88,7 +88,7 @@ namespace SemanticGitFlow
 		public void when_parsing_outputs_then_can_retrieve_properties()
 		{
 			var source = File.ReadAllText(@"..\..\GetSemanticVersion.cs");
-			
+
 			var outputExpr = @"\#region Output(?<output>[^\#]+)#endregion";
 
 			Assert.True(Regex.IsMatch(source, outputExpr, RegexOptions.Singleline));
@@ -112,7 +112,7 @@ namespace SemanticGitFlow
 		public void when_parsing_code_then_can_retrieve_existing()
 		{
 			var source = File.ReadAllText(@"..\..\GetSemanticVersion.cs");
-			
+
 			var codeExpr = @"\#region Code(?<code>[^\#]+)#endregion";
 
 			Assert.True(Regex.IsMatch(source, codeExpr, RegexOptions.Singleline));

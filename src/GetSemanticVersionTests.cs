@@ -12,7 +12,7 @@
 	// Added props for easier testing.
 	partial class GetSemanticVersion
 	{
-		public string FullVersion { get { return Major + "." + Minor + "." + Patch + Release; } }
+		public string FullVersion { get { return Major + "." + Minor + "." + Patch + Commit; } }
 		public string SimpleVersion { get { return Major + "." + Minor + "." + Patch; } }
 	}
 

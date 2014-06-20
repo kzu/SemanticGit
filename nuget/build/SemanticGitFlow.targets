@@ -16,12 +16,20 @@
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<PropertyGroup>
+	<PropertyGroup Condition="'$(GenerateChangeLog)' == 'true'">
 		<BuildDependsOn>
-			GenerateAssemblyInfo;
 			$(BuildDependsOn);
 			GenerateChangeLog;
 		</BuildDependsOn>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(GenerateAssemblyInfo)' == 'true'">
+		<BuildDependsOn>
+			GenerateAssemblyInfo;
+			$(BuildDependsOn);
+		</BuildDependsOn>
+		
+		<AssemblyInfoFile Condition="'$(AssemblyInfoFile)' == ''">$(IntermediateOutputPath)AssemblyInfo.g$(DefaultLanguageSourceExtension)</AssemblyInfoFile>
 	</PropertyGroup>
 
 	<Import Project="SemanticGitFlow.tasks" />
@@ -29,16 +37,74 @@
 	<ItemGroup>
 		<_Head Include="$(GitRoot)\.git\HEAD;$(GitRoot)\.git\refs\heads\*.*" />
 	</ItemGroup>
-	
-	<Target Name="GenerateAssemblyInfo" DependsOnTargets="GetVersion" />
-	
+
+	<Target Name="GenerateAssemblyInfo" 
+			DependsOnTargets="GetVersion;FormatVersion;GenerateAssemblyInfoCS;;GenerateAssemblyInfoVB">
+
+		<Error Condition="'$(Language)' != 'C#' AND '$(Language)' != 'VB'"
+			   Text="Only C# and VB languages are supported for semantic assembly info generation from Git." />
+
+		<ItemGroup>
+			<Compile Include="$(AssemblyInfoFile)" />
+			<FileWrites Include="$(AssemblyInfoFile)" />
+		</ItemGroup>
+
+		<Message Text="AssemblyInfo: 
+	AssemblyVersion=$(_AssemblyVersion)
+	AssemblyFileVersion=$(_AssemblyFileVersion)
+	AssemblyInformationalVersion=$(_AssemblyInformationalVersion)" />
+		
+	</Target>
+
+	<Target Name="FormatVersion">
+		<PropertyGroup>
+			<_AssemblyVersion>$(AssemblyVersionFormat.Replace('MAJOR', '$(_Major)').Replace('MINOR', '$(_Minor)').Replace('PATCH', '$(_Patch)'))</_AssemblyVersion>
+			<_AssemblyFileVersion>$(AssemblyFileVersionFormat.Replace('MAJOR', '$(_Major)').Replace('MINOR', '$(_Minor)').Replace('PATCH', '$(_Patch)'))</_AssemblyFileVersion>
+			<_AssemblyInformationalVersion>$(AssemblyInformationalVersionFormat.Replace('MAJOR', '$(_Major)').Replace('MINOR', '$(_Minor)').Replace('PATCH', '$(_Patch)').Replace('-PRERELEASE', '$(_PreRelease)'))</_AssemblyInformationalVersion>
+		</PropertyGroup>
+	</Target>
+
+	<Target Name="GenerateAssemblyInfoCS"
+			Inputs="$(GitRoot)\.git\HEAD;@(_Head)"
+			Outputs="$(AssemblyInfoFile)"
+			Condition="'$(Language)' == 'C#'">
+
+		<WriteLinesToFile File='$(AssemblyInfoFile)'
+						  Lines='
+[assembly: System.Reflection.AssemblyVersion("$(_AssemblyVersion)")]
+[assembly: System.Reflection.AssemblyFileVersion("$(_AssemblyFileVersion)")]
+[assembly: System.Reflection.AssemblyInformationalVersion("$(_AssemblyInformationalVersion)")]
+'
+						  Overwrite='true' />
+
+	</Target>
+
+	<Target Name="GenerateAssemblyInfoVB"
+			Inputs="$(GitRoot)\.git\HEAD;@(_Head)"
+			Outputs="$(AssemblyInfoFile)"
+			 Condition="'$(Language)' == 'VB'">
+
+
+		<WriteLinesToFile File='$(AssemblyInfoFile)'
+						  Lines='
+&lt;Assembly: System.Reflection.AssemblyVersion("$(_AssemblyVersion)")&gt;
+&lt;Assembly: System.Reflection.AssemblyFileVersion("$(_AssemblyFileVersion)")&gt;
+&lt;Assembly: System.Reflection.AssemblyInformationalVersion("$(_AssemblyInformationalVersion)")&gt;
+'
+						  Overwrite='true' />
+
+	</Target>
+
 	<Target Name="GenerateChangeLog"
 			DependsOnTargets="GenerateTextLog;GenerateMarkdownLog" />
 
 	<Target Name="GenerateTextLog"
 			Inputs="$(GitRoot)\.git\HEAD;@(_Head)"
 			Outputs="$(GitRoot)\$(ChangeLog)"
-			DependsOnTargets="GetTagCommits"><!-- This is suboptimal -->
+			DependsOnTargets="GetTagCommits">
+		<!-- This DependsOnTargets is suboptimal since the inputs/outputs may determine  
+		     that this target doesn't need to run at all. 
+		-->
 		
 		<!-- TODO: make this incremental -->
 		<WriteLinesToFile File="$(GitRoot)\$(ChangeLog)" Overwrite="true" />
@@ -64,16 +130,20 @@
 		<Message Text="Generated GitHub linked markdown for repository base url $(GitHubUrl)." Importance="normal" />
 	</Target>
 
-	<Target Name="GetVersion" DependsOnTargets="GetHead" Returns="$(_Major).$(_Minor).$(_Patch)$(_Release)">
+	<Target Name="GetVersion" DependsOnTargets="GetHead">
 		
 		<GetSemanticVersion Tag="$(_HeadTag)">
 			<Output TaskParameter="Major" PropertyName="_Major" />
 			<Output TaskParameter="Minor" PropertyName="_Minor" />
 			<Output TaskParameter="Patch" PropertyName="_Patch" />
-			<Output TaskParameter="Release" PropertyName="_Release" />
+			<Output TaskParameter="Commit" PropertyName="_Commit" />
 		</GetSemanticVersion>
 
-		<Message Text="Determined current semantic version as $(_Major).$(_Minor).$(_Patch)$(_Release)"
+		<PropertyGroup>
+			<_PreRelease Condition="'$(_Commit)' != ''">-$(PreReleasePrefix)$(_Commit)</_PreRelease>
+		</PropertyGroup>
+		
+		<Message Text="Determined current semantic version as $(_Major).$(_Minor).$(_Patch)$(_PreRelease)"
 				 Importance="normal" />
 		
 	</Target>

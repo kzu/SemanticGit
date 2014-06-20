@@ -15,26 +15,44 @@
    limitations under the License.
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-	
+
 	<!--
     ============================================================
-              Customization Properties
+              ChangeLog Generation
 	
-	ChangeLog: the changelog file to generate. By default CHANGELOG
-	
-	CommitFormat: the format for commit messages. By default, - %s
-	
-	GitHubUrl: optional GitHub repository base Url that will cause the 
-	commit messages to be parsed for #[issue] and turn them to 
-	links in the generated $(LogFile).md file. i.e. 
-	https://github.com/kzu/SemanticGitFlow
+	GenerateChangeLog: Whether to generate the change log on build. 
+	                   Default: false. 
+	ChangeLog:         Change log file name to generate, relative to
+					   the git repository root. Default: CHANGELOG
+	CommitFormat:      Format string for commit messages.
+	                   Default: - %s
+	GitHubUrl:         Optional GitHub repository base Url that 
+					   will cause the commit messages to be parsed 
+					   for #[issue] and turn them to links in the 
+					   generated $(ChangeLog).md file. i.e. 
+					   https://github.com/kzu/SemanticGitFlow
 	
 	============================================================
 	-->
 	<PropertyGroup>
+		<GenerateChangeLog Condition="'$(GenerateChangeLog)' == ''">true</GenerateChangeLog>
 		<ChangeLog Condition="'$(ChangeLog)' == ''">CHANGELOG</ChangeLog>
 		<CommitFormat Condition="'$(CommitFormat)' == ''">- %s</CommitFormat>
 		<GitHubUrl Condition="'$(GitHubUrl)' != '' AND !$(GitHubUrl.EndsWith('/'))">$(GitHubUrl)/</GitHubUrl>
+	</PropertyGroup>
+
+	<!--
+    ============================================================
+              AssemblyInfo Generation
+	
+	============================================================
+	-->
+	<PropertyGroup>
+		<GenerateAssemblyInfo Condition="'$(GenerateAssemblyInfo)' == ''">true</GenerateAssemblyInfo>
+		<AssemblyVersionFormat Condition="'$(AssemblyVersionFormat)' == ''">MAJOR.MINOR.0</AssemblyVersionFormat>
+		<AssemblyFileVersionFormat Condition="'$(AssemblyFileVersionFormat)' == ''">MAJOR.MINOR.PATCH</AssemblyFileVersionFormat>
+		<AssemblyInformationalVersionFormat Condition="'$(AssemblyInformationalVersionFormat)' == ''">MAJOR.MINOR.PATCH-PRERELEASE</AssemblyInformationalVersionFormat>
+		<PreReleasePrefix Condition="'$(PreReleasePrefix)' == ''">SHA</PreReleasePrefix>
 	</PropertyGroup>
 
 	<!--

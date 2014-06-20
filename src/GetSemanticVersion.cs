@@ -24,9 +24,8 @@
 	Major      - The MAJOR component of the semantic version tag
 	Minor      - The MINOR component of the semantic version tag
 	Patch      - The PATCH component of the semantic version tag
-	Release    - The optional release fragment, which contains 
-                 the hash of the last commit after tagging (none 
-                 for the release immediate after tagging). 
+	Commit     - The optional SHA value of the last commit after 
+                 tagging (none for the release immediate after tagging). 
                     
                  i.e.:
                  
@@ -51,7 +50,7 @@
 		public string Major { get; set; }
 		public string Minor { get; set; }
 		public string Patch { get; set; }
-		public string Release { get; set; }
+		public string Commit { get; set; }
 
 		#endregion
 	
@@ -80,7 +79,7 @@
 
 			Patch = patch.ToString();
 
-			Release = match.Groups["Commit"].Success ?
+			Commit = match.Groups["Commit"].Success ?
 				"-" + match.Groups["Commit"].Value : "";
 
 			#endregion
