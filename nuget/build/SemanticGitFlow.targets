@@ -16,6 +16,15 @@
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+	<PropertyGroup Condition="'$(GenerateAssemblyInfo)' == 'true'">
+		<BuildDependsOn>
+			GenerateAssemblyInfo;
+			$(BuildDependsOn);
+		</BuildDependsOn>
+
+		<AssemblyInfoFile Condition="'$(AssemblyInfoFile)' == ''">$(IntermediateOutputPath)AssemblyInfo.g$(DefaultLanguageSourceExtension)</AssemblyInfoFile>
+	</PropertyGroup>
+
 	<PropertyGroup Condition="'$(GenerateChangeLog)' == 'true'">
 		<BuildDependsOn>
 			$(BuildDependsOn);
@@ -23,17 +32,14 @@
 		</BuildDependsOn>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(GenerateAssemblyInfo)' == 'true'">
-		<BuildDependsOn>
-			GenerateAssemblyInfo;
-			$(BuildDependsOn);
-		</BuildDependsOn>
-		
-		<AssemblyInfoFile Condition="'$(AssemblyInfoFile)' == ''">$(IntermediateOutputPath)AssemblyInfo.g$(DefaultLanguageSourceExtension)</AssemblyInfoFile>
-	</PropertyGroup>
-
 	<Import Project="SemanticGitFlow.tasks" />
 
+	<ItemDefinitionGroup>
+		<_Head>
+			<Generator>MSBuild:Compile</Generator>
+		</_Head>
+	</ItemDefinitionGroup>
+	
 	<ItemGroup>
 		<_Head Include="$(GitRoot)\.git\HEAD;$(GitRoot)\.git\refs\heads\*.*" />
 	</ItemGroup>
@@ -46,7 +52,6 @@
 
 		<ItemGroup>
 			<Compile Include="$(AssemblyInfoFile)" />
-			<FileWrites Include="$(AssemblyInfoFile)" />
 		</ItemGroup>
 
 		<Message Text="AssemblyInfo: 
@@ -77,6 +82,10 @@
 '
 						  Overwrite='true' />
 
+		<ItemGroup>
+			<FileWrites Include="$(AssemblyInfoFile)" />
+		</ItemGroup>
+
 	</Target>
 
 	<Target Name="GenerateAssemblyInfoVB"
@@ -93,6 +102,10 @@
 '
 						  Overwrite='true' />
 
+		<ItemGroup>
+			<FileWrites Include="$(AssemblyInfoFile)" />
+		</ItemGroup>
+
 	</Target>
 
 	<Target Name="GenerateChangeLog"
@@ -103,7 +116,8 @@
 			Outputs="$(GitRoot)\$(ChangeLog)"
 			DependsOnTargets="GetTagCommits">
 		<!-- This DependsOnTargets is suboptimal since the inputs/outputs may determine  
-		     that this target doesn't need to run at all. 
+		     that this target doesn't need to run at all and we'd have still 
+			 retrieved all tag commits.
 		-->
 		
 		<!-- TODO: make this incremental -->
@@ -117,7 +131,11 @@
 			Condition="'$(GitHubUrl)' != ''"
 			Inputs="$(GitRoot)\.git\HEAD;@(_Head)"
 			Outputs="$(GitRoot)\$(ChangeLog).md"
-			DependsOnTargets="GetTagCommits"><!-- This is suboptimal -->
+			DependsOnTargets="GetTagCommits">
+		<!-- This DependsOnTargets is suboptimal since the inputs/outputs may determine  
+		     that this target doesn't need to run at all and we'd have still 
+			 retrieved all tag commits.
+		-->
 
 		<!-- TODO: make this incremental -->
 		<WriteLinesToFile File="$(GitRoot)\$(ChangeLog).md" Overwrite="true" />

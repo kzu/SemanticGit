@@ -9,13 +9,6 @@
 	using System.Threading.Tasks;
 	using Xunit;
 
-	// Added props for easier testing.
-	partial class GetSemanticVersion
-	{
-		public string FullVersion { get { return Major + "." + Minor + "." + Patch + Commit; } }
-		public string SimpleVersion { get { return Major + "." + Minor + "." + Patch; } }
-	}
-
 	public class GetSemanticVersionTests
 	{
 		[Fact]
@@ -47,7 +40,6 @@
 			task.Execute();
 
 			Assert.Equal("8", task.Patch);
-			Assert.Equal("1.0.8-778787d", task.FullVersion);
 		}
 
 		[Fact]

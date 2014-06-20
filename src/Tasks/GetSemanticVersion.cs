@@ -3,7 +3,7 @@
 	using Microsoft.Build.Utilities;
 
 	#region Using
-	
+
 	using System.Text.RegularExpressions;
 
 	#endregion
@@ -40,20 +40,20 @@
 	public partial class GetSemanticVersion : Task
 	{
 		#region Input
-	
+
 		public string Tag { get; set; }
-		
+
 		#endregion
 
 		#region Output
-		
+
 		public string Major { get; set; }
 		public string Minor { get; set; }
 		public string Patch { get; set; }
 		public string Commit { get; set; }
 
 		#endregion
-	
+
 		public override bool Execute()
 		{
 			#region Code
@@ -70,6 +70,7 @@
 
 			Major = match.Groups["Major"].Value;
 			Minor = match.Groups["Minor"].Value;
+			Commit = match.Groups["Commit"].Value;
 
 			var patch = int.Parse(match.Groups["Patch"].Value);
 
@@ -78,9 +79,6 @@
 				patch += int.Parse(match.Groups["Revision"].Value);
 
 			Patch = patch.ToString();
-
-			Commit = match.Groups["Commit"].Success ?
-				"-" + match.Groups["Commit"].Value : "";
 
 			#endregion
 

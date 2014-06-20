@@ -11,10 +11,12 @@
 
 	public class RegexTests
 	{
+		const string SourceFile = @"..\..\..\Tasks\GetSemanticVersion.cs";
+		
 		[Fact]
 		public void when_parsing_class_then_can_retrieve_name()
 		{
-			var source = File.ReadAllText(@"..\..\GetSemanticVersion.cs");
+			var source = File.ReadAllText(SourceFile);
 
 			var classNameExpr = @"class (?<name>[^\s]+) :";
 
@@ -27,7 +29,7 @@
 		[Fact]
 		public void when_parsing_usings_then_can_retrieve_existing()
 		{
-			var source = File.ReadAllText(@"..\..\GetSemanticVersion.cs");
+			var source = File.ReadAllText(SourceFile);
 
 			var usingExpr = @"\#region Using(?<using>[^\#]+)#endregion";
 
@@ -48,7 +50,7 @@
 		[Fact]
 		public void when_getting_documentation_then_can_retrieve_it()
 		{
-			var source = File.ReadAllText(@"..\..\GetSemanticVersion.cs");
+			var source = File.ReadAllText(SourceFile);
 
 			var docExpr = @"\/\*(?<doc>.+)\*\/";
 
@@ -63,7 +65,7 @@
 		[Fact]
 		public void when_parsing_inputs_then_can_retrieve_properties()
 		{
-			var source = File.ReadAllText(@"..\..\GetSemanticVersion.cs");
+			var source = File.ReadAllText(SourceFile);
 
 			var inputExpr = @"\#region Input(?<input>[^\#]+)#endregion";
 
@@ -87,7 +89,7 @@
 		[Fact]
 		public void when_parsing_outputs_then_can_retrieve_properties()
 		{
-			var source = File.ReadAllText(@"..\..\GetSemanticVersion.cs");
+			var source = File.ReadAllText(SourceFile);
 
 			var outputExpr = @"\#region Output(?<output>[^\#]+)#endregion";
 
@@ -111,7 +113,7 @@
 		[Fact]
 		public void when_parsing_code_then_can_retrieve_existing()
 		{
-			var source = File.ReadAllText(@"..\..\GetSemanticVersion.cs");
+			var source = File.ReadAllText(SourceFile);
 
 			var codeExpr = @"\#region Code(?<code>[^\#]+)#endregion";
 

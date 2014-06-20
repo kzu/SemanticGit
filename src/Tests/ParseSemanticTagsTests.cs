@@ -209,17 +209,19 @@ BETA
 		}
 
 		[Fact]
-		public void when_head_is_simple_tag_then_can_retrieve_semantic_version()
+		public void when_head_is_simple_tag_then_can_retrieve_semantic_version_parts()
 		{
 			var task = new GetSemanticVersion
 			{
 				BuildEngine = Mock.Of<IBuildEngine>(),
-				Tag = "1.1.0"
+				Tag = "1.2.3"
 			};
 
 			task.Execute();
 
-			Assert.Equal("1.1.0", task.FullVersion);
+			Assert.Equal("1", task.Major);
+			Assert.Equal("2", task.Minor);
+			Assert.Equal("3", task.Patch);
 		}
 
 		[Fact]
@@ -228,26 +230,28 @@ BETA
 			var task = new GetSemanticVersion
 			{
 				BuildEngine = Mock.Of<IBuildEngine>(),
-				Tag = "v1.1.0"
+				Tag = "v1.2.3"
 			};
 
 			task.Execute();
 
-			Assert.Equal("1.1.0", task.FullVersion);
+			Assert.Equal("1", task.Major);
+			Assert.Equal("2", task.Minor);
+			Assert.Equal("3", task.Patch);
 		}
 
 		[Fact]
-		public void when_head_has_commits_after_tag_then_can_retrieve_semantic_version_with_hash()
+		public void when_head_has_commits_after_tag_then_can_retrieve_commit_hash()
 		{
 			var task = new GetSemanticVersion
 			{
 				BuildEngine = Mock.Of<IBuildEngine>(),
-				Tag = "1.1.0-1-g928e945"
+				Tag = "1.2.3-1-g928e945"
 			};
 
 			task.Execute();
 
-			Assert.Equal("1.1.1-928e945", task.FullVersion);
+			Assert.Equal("928e945", task.Commit);
 		}
 
 		[Fact]
