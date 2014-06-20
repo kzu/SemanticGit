@@ -1,4 +1,5 @@
 ## [v0.2.8](https://github.com/kzu/SemanticGitFlow//releases/tag/v0.2.8)
+- Update release notes for upcoming 0.2.8 release
 - Add missing AssemblyInfo.cs for Tasks project.
 - Skip assembly info generation from build.proj script
 - Refactored solution structure for better maintainability
