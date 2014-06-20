@@ -1,4 +1,7 @@
-v0.2.5
+v0.2.8
+- Add missing AssemblyInfo.cs for Tasks project.
+- Skip assembly info generation from build.proj script
+- Refactored solution structure for better maintainability
 - Initial generation of AssemblyInfo.g.cs file
 
 v0.2.4
