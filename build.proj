@@ -26,6 +26,8 @@
 		<BuildPackage>true</BuildPackage>
 		<DownloadNuGetExe>true</DownloadNuGetExe>
 		<TargetDir>$(BuildRoot)</TargetDir>
+		<GenerateChangeLog>true</GenerateChangeLog>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<GitHubUrl>https://github.com/kzu/SemanticGitFlow</GitHubUrl>
 	</PropertyGroup>
 
@@ -59,13 +61,9 @@
 				 Value="$(ReleaseNotes)"
 				 Condition="'$(ReleaseNotes)' != ''" />
 
-		<Exec Command="&quot;$(NuGetCommand)&quot; pack -NoPackageAnalysis &quot;%(NuSpec.FullPath)&quot; -Version &quot;$(_Major).$(_Minor).$(_Patch)-pre&quot;"
-			  Condition="'$(_Release)' != ''"
+		<Exec Command="&quot;$(NuGetCommand)&quot; pack -NoPackageAnalysis &quot;%(NuSpec.FullPath)&quot; -Version &quot;$(_Major).$(_Minor).$(_Patch)$(_PreRelease)&quot;"
               ContinueOnError="false" />
 
-		<Exec Command="&quot;$(NuGetCommand)&quot; pack -NoPackageAnalysis &quot;%(NuSpec.FullPath)&quot; -Version &quot;$(_Major).$(_Minor).$(_Patch)&quot;"
-			  Condition="'$(_Release)' == ''"
-              ContinueOnError="false" />
 	</Target>
 
 	<!-- Redefined from NuGet.targets since we can restore any number of package config files. -->
