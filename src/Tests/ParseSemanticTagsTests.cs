@@ -336,5 +336,22 @@ BETA
 			Assert.Equal("2.1.0", task.Tags[0].GetMetadata("Title"));
 		}
 
+		[Fact]
+		public void when_parsing_tags_then_sorts_by_semantic_simple_version_descending()
+		{
+			var task = new ParseSemanticTags
+			{
+				BuildEngine = Mock.Of<IBuildEngine>(),
+				HeadTag = "v0.2.8-3-g4510f04",
+				Input = @"v0.1.0
+v0.2.0
+v0.2.4
+v0.2.8"
+			};
+
+			task.Execute();
+
+			Assert.Equal(new Version("0.2.11"), new Version(task.Tags[0].GetMetadata("Version")));
+		}
 	}
 }

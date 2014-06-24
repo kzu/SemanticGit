@@ -165,10 +165,12 @@
 			var version = new Version(headVersion);
 
 			Tags = allTags
+				.Select(t => new { Tag = t, Version = new Version(t.GetMetadata("Version")) })
 				// Only include tags that are smaller or equal than the current branch head
-				.Where(t => new Version(t.GetMetadata("Version")) <= version)
+				.Where(t => t.Version <= version)
 				// Finally, sort by version.
-				.OrderByDescending(t => t.GetMetadata("Version"))
+				.OrderByDescending(t => t.Version)
+				.Select(t => t.Tag)
 				.ToArray();
 
 			#endregion
