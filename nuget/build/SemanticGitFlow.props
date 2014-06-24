@@ -31,6 +31,11 @@
 					   for #[issue] and turn them to links in the 
 					   generated $(ChangeLog).md file. i.e. 
 					   https://github.com/kzu/SemanticGitFlow
+    HeadTagText:       Optionally override the head tag text to use
+	                   in the change log, useful when generating 
+					   the changelog for an upcoming release that 
+					   will be named different than the automatically
+					   generated semantic version.
 	
 	============================================================
 	-->
@@ -39,8 +44,28 @@
 		<ChangeLog Condition="'$(ChangeLog)' == ''">CHANGELOG</ChangeLog>
 		<CommitFormat Condition="'$(CommitFormat)' == ''">- %s</CommitFormat>
 		<GitHubUrl Condition="'$(GitHubUrl)' != '' AND !$(GitHubUrl.EndsWith('/'))">$(GitHubUrl)/</GitHubUrl>
+		<HeadTagText Condition="'$(HeadTagText)' == ''"></HeadTagText>
 	</PropertyGroup>
 
+	<!--
+    ============================================================
+              PreReleasePrefix 
+	
+	Prefix used for non-tagged releases (that is, when there are 
+	additional commits on top of the newest tag. This prefix 
+	is added after the dash and before the commit SHA, following
+	SemVer rules, i.e.: 1.0.2-SHAccbf25. 
+	Default: SHA.
+	
+	When the replacement token PRERELEASE is used in an assembly 
+	or nuspec version format, the prefix is prepended to the 
+	commit SHA.
+	============================================================
+	-->
+	<PropertyGroup>
+		<PreReleasePrefix Condition="'$(PreReleasePrefix)' == ''">SHA</PreReleasePrefix>
+	</PropertyGroup>
+	
 	<!--
     ============================================================
               AssemblyInfo Generation
@@ -52,7 +77,18 @@
 		<AssemblyVersionFormat Condition="'$(AssemblyVersionFormat)' == ''">MAJOR.MINOR.0</AssemblyVersionFormat>
 		<AssemblyFileVersionFormat Condition="'$(AssemblyFileVersionFormat)' == ''">MAJOR.MINOR.PATCH</AssemblyFileVersionFormat>
 		<AssemblyInformationalVersionFormat Condition="'$(AssemblyInformationalVersionFormat)' == ''">MAJOR.MINOR.PATCH-PRERELEASE</AssemblyInformationalVersionFormat>
-		<PreReleasePrefix Condition="'$(PreReleasePrefix)' == ''">SHA</PreReleasePrefix>
+	</PropertyGroup>
+
+	<!--
+    ============================================================
+              NuSpec Updating
+	
+	============================================================
+	-->
+	<PropertyGroup>
+		<UpdateNuSpec Condition="'$(UpdateNuSpec)' == ''">true</UpdateNuSpec>
+		<NuSpecInclude Condition="'$(NuSpecInclude)' == ''">$(MSBuildProjectDirectory)\**\*.nuspec</NuSpecInclude>
+		<NuSpecVersionFormat Condition="'$(AssemblyFileVersionFormat)' == ''">MAJOR.MINOR.PATCH-PRERELEASE</NuSpecVersionFormat>
 	</PropertyGroup>
 
 	<!--

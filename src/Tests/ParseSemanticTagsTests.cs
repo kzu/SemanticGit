@@ -302,5 +302,39 @@ BETA
 			Assert.Equal("1.1.0", task.Tags[2].ItemSpec);
 			Assert.Equal("1.0.0", task.Tags[3].ItemSpec);
 		}
+
+		[Fact]
+		public void when_overriding_head_text_then_sets_tag_title()
+		{
+			// This is useful when an upcoming release wants to generate 
+			// up-to-date changelog but not use the auto-generated 
+			// semantic version, but an upcoming tag (i.e. we're at 
+			// 1.0.55 but we are about to release 1.1.0 and we want the 
+			// changelog to contain all current commits and be the 
+			// definite content for the 1.1.0 release. If we just 
+			// tagged and run the task, the generated (new) content 
+			// with the updated label wouldn't be included in the tag 
+			// since we already added on top of the tag. We'd have to 
+			// delete the tag and re-apply it with the updated changelog.
+			// None of this is needed if we're tagging with the same 
+			// value as the changelog-generated one.
+			var task = new ParseSemanticTags
+			{
+				BuildEngine = Mock.Of<IBuildEngine>(),
+				HeadTag = "2.0.0-2-gasdfasdf",
+				HeadTagText = "2.1.0",
+				Input = @"1.0.0
+1.1.0
+2.0.0"
+			};
+
+			task.Execute();
+
+			Assert.Equal(4, task.Tags.Length);
+
+			Assert.Equal("2.0.0-2-gasdfasdf", task.Tags[0].ItemSpec);
+			Assert.Equal("2.1.0", task.Tags[0].GetMetadata("Title"));
+		}
+
 	}
 }

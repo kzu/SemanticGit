@@ -13,12 +13,19 @@
 	{
 		const string SourceFile = @"..\..\..\Tasks\GetSemanticVersion.cs";
 		
+		string usingExpr = @"\#region Using(?<using>[^\#]+)#endregion";
+		string docExpr = @"\/\*(?<doc>.+)\*\/";
+		string classNameExpr = @"class (?<name>[^\s]+) :";
+		string codeExpr = @"\#region Code(?<code>[^\#]+)#endregion";
+
+		string inputBlockExpr = @"\#region Input(?<input>[^\#]+)\#endregion";
+		string outputBlockExpr = @"\#region Output(?<output>[^\#]+)\#endregion";
+       	string propertyExpr = @"(?<required>\[Required\].*?)?public (?<type>[^\s]+) (?<name>[^\s]+) { get; set; }";
+
 		[Fact]
 		public void when_parsing_class_then_can_retrieve_name()
 		{
 			var source = File.ReadAllText(SourceFile);
-
-			var classNameExpr = @"class (?<name>[^\s]+) :";
 
 			var name = Regex.Match(source, classNameExpr)
 				.Groups["name"].Value;
@@ -30,8 +37,6 @@
 		public void when_parsing_usings_then_can_retrieve_existing()
 		{
 			var source = File.ReadAllText(SourceFile);
-
-			var usingExpr = @"\#region Using(?<using>[^\#]+)#endregion";
 
 			Assert.True(Regex.IsMatch(source, usingExpr, RegexOptions.Singleline));
 
@@ -65,44 +70,79 @@
 		[Fact]
 		public void when_parsing_inputs_then_can_retrieve_properties()
 		{
-			var source = File.ReadAllText(SourceFile);
+			var source = @"
+public partial class Foo : Task
+{
+	#region Input
 
-			var inputExpr = @"\#region Input(?<input>[^\#]+)#endregion";
+	[Required]
+	public string Input { get; set; }
 
-			Assert.True(Regex.IsMatch(source, inputExpr, RegexOptions.Singleline));
+	[Required]
+	public string HeadTag { get; set; }
 
-			var inputs = Regex.Match(source, inputExpr, RegexOptions.Singleline)
+	public string HeadTagText { get; set; }
+
+	#endregion
+}";
+
+			Assert.True(Regex.IsMatch(source, inputBlockExpr, RegexOptions.Singleline));
+
+			var block = Regex.Match(source, inputBlockExpr, RegexOptions.Singleline)
 				.Groups["input"].Value
-				.Trim()
-				.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-				.Select(line => line.Trim())
-				.Select(line => line.Substring(7))
-				.Select(line => line.Substring(0, line.IndexOf('{')).Split(' '))
-				.Select(line => new { Type = line[0], Name = line[1] })
+				.Trim();
+
+			var inputs = Regex.Matches(block, propertyExpr, RegexOptions.Singleline)
+				.OfType<Match>()
+				.Select(match => new 
+				{ 
+					Name = match.Groups["name"].Value,
+					Type = match.Groups["type"].Value, 
+					Required = match.Groups["required"].Success,
+				})
 				.ToList();
 
-			Assert.Equal(1, inputs.Count);
-			Assert.Equal("string", inputs[0].Type);
-			Assert.Equal("Tag", inputs[0].Name);
+			Assert.Equal(3, inputs.Count);
+			Assert.Equal(3, inputs.Where(t => t.Type == "string").Count());
+			Assert.Equal("Input", inputs[0].Name);
+			Assert.Equal("HeadTag", inputs[1].Name);
+			Assert.Equal("HeadTagText", inputs[2].Name);
 		}
 
 		[Fact]
 		public void when_parsing_outputs_then_can_retrieve_properties()
 		{
-			var source = File.ReadAllText(SourceFile);
+			var source = @"
+	public partial class Foo : Task
+	{
+		#region Input
 
-			var outputExpr = @"\#region Output(?<output>[^\#]+)#endregion";
+		public string Tag { get; set; }
 
-			Assert.True(Regex.IsMatch(source, outputExpr, RegexOptions.Singleline));
+		#endregion
 
-			var outputs = Regex.Match(source, outputExpr, RegexOptions.Singleline)
+		#region Output
+
+		public string Major { get; set; }
+		public string Minor { get; set; }
+		public string Patch { get; set; }
+		public string Commit { get; set; }
+
+		#endregion
+}";
+
+			var block = Regex.Match(source, outputBlockExpr, RegexOptions.Singleline)
 				.Groups["output"].Value
-				.Trim()
-				.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-				.Select(line => line.Trim())
-				.Select(line => line.Substring(7))
-				.Select(line => line.Substring(0, line.IndexOf('{')).Split(' '))
-				.Select(line => new { Type = line[0], Name = line[1] })
+				.Trim();
+
+			var outputs = Regex.Matches(block, propertyExpr, RegexOptions.Singleline)
+				.OfType<Match>()
+				.Select(match => new 
+				{ 
+					Name = match.Groups["name"].Value,
+					Type = match.Groups["type"].Value, 
+					Required = match.Groups["required"].Success,
+				})
 				.ToList();
 
 			Assert.Equal(4, outputs.Count);
@@ -115,14 +155,92 @@
 		{
 			var source = File.ReadAllText(SourceFile);
 
-			var codeExpr = @"\#region Code(?<code>[^\#]+)#endregion";
-
 			Assert.True(Regex.IsMatch(source, codeExpr, RegexOptions.Singleline));
 
 			var code = Regex.Match(source, codeExpr, RegexOptions.Singleline)
 				.Groups["code"].Value;
 
 			Assert.NotEmpty(code);
+		}
+
+		[Fact]
+		public void when_parsing_required_inputs_then_can_retrieve_required_properties()
+		{
+			var source = @"
+public partial class Foo : Task
+{
+	#region Input
+
+	[Required]
+	public string Input { get; set; }
+
+	[Required]
+	public string HeadTag { get; set; }
+
+	public string HeadTagText { get; set; }
+
+	#endregion
+}";
+
+			Assert.True(Regex.IsMatch(source, inputBlockExpr, RegexOptions.Singleline));
+
+			var block = Regex.Match(source, inputBlockExpr, RegexOptions.Singleline)
+				.Groups["input"].Value
+				.Trim();
+
+			var inputs = Regex.Matches(block, propertyExpr, RegexOptions.Singleline)
+				.OfType<Match>()
+				.Select(match => new 
+				{ 
+					Name = match.Groups["name"].Value,
+					Type = match.Groups["type"].Value, 
+					Required = match.Groups["required"].Success,
+				})
+				.ToList();
+
+			Assert.Equal(3, inputs.Count);
+			Assert.Equal(2, inputs.Count(x => x.Required));
+			Assert.Equal(1, inputs.Count(x => !x.Required));
+		}
+
+		[Fact]
+		public void when_parsing_required_inputs_then_can_retrieve_non_required_properties()
+		{
+			var source = @"
+public partial class Foo : Task
+{
+	#region Input
+
+		[Required]
+		public string Exe { get; set; }
+
+		public string Args { get; set; }
+	
+		[Required]
+		public string WorkingDir { get; set; }
+
+	#endregion
+}";
+
+			Assert.True(Regex.IsMatch(source, inputBlockExpr, RegexOptions.Singleline));
+
+			var block = Regex.Match(source, inputBlockExpr, RegexOptions.Singleline)
+				.Groups["input"].Value
+				.Trim();
+
+			var inputs = Regex.Matches(block, propertyExpr, RegexOptions.Singleline)
+				.OfType<Match>()
+				.Select(match => new 
+				{ 
+					Name = match.Groups["name"].Value,
+					Type = match.Groups["type"].Value, 
+					Required = match.Groups["required"].Success,
+				})
+				.ToList();
+
+			Assert.Equal(3, inputs.Count);
+			Assert.Equal(2, inputs.Count(x => x.Required));
+			Assert.Equal(1, inputs.Count(x => !x.Required));
 		}
 	}
 }

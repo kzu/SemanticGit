@@ -25,6 +25,15 @@
 		<AssemblyInfoFile Condition="'$(AssemblyInfoFile)' == ''">$(IntermediateOutputPath)AssemblyInfo.g$(DefaultLanguageSourceExtension)</AssemblyInfoFile>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(UpdateNuSpec)' == 'true'">
+		<BuildDependsOn>
+			UpdateNuSpec;
+			$(BuildDependsOn);
+		</BuildDependsOn>
+
+		<AssemblyInfoFile Condition="'$(AssemblyInfoFile)' == ''">$(IntermediateOutputPath)AssemblyInfo.g$(DefaultLanguageSourceExtension)</AssemblyInfoFile>
+	</PropertyGroup>
+
 	<PropertyGroup Condition="'$(GenerateChangeLog)' == 'true'">
 		<BuildDependsOn>
 			$(BuildDependsOn);
@@ -43,6 +52,13 @@
 	<ItemGroup>
 		<_Head Include="$(GitRoot)\.git\HEAD;$(GitRoot)\.git\refs\heads\*.*" />
 	</ItemGroup>
+
+	<Target Name="UpdateNuSpec"
+			DependsOnTargets="GetVersion;FormatVersion">
+
+		<!-- // todo -->
+
+	</Target>
 
 	<Target Name="GenerateAssemblyInfo" 
 			DependsOnTargets="GetVersion;FormatVersion;GenerateAssemblyInfoCS;;GenerateAssemblyInfoVB">
@@ -180,7 +196,11 @@
 			<Output TaskParameter="Output" PropertyName="_TagOutput" />
 		</RunGit>
 
-		<ParseSemanticTags Input="$(_TagOutput)" HeadTag="$(_HeadTag)">
+		<PropertyGroup Condition="'$(HeadTagText)' == ''">
+			<HeadTagText>$(_HeadTag)</HeadTagText>
+		</PropertyGroup>
+		
+		<ParseSemanticTags Input="$(_TagOutput)" HeadTag="$(_HeadTag)" HeadTagText="$(HeadTagText)">
 			<Output TaskParameter="Tags" ItemName="_Tags" />
 		</ParseSemanticTags>
 

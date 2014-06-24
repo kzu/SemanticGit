@@ -38,10 +38,12 @@
 		var usingExpr = @"\#region Using(?<using>[^\#]+)#endregion";
 		var docExpr = @"\/\*(?<doc>.+)\*\/";
 		var classNameExpr = @"class (?<name>[^\s]+) :";
-		var inputExpr = @"\#region Input(?<input>[^\#]+)#endregion";
-		var outputExpr = @"\#region Output(?<output>[^\#]+)#endregion";
 		var codeExpr = @"\#region Code(?<code>[^\#]+)#endregion";
 
+		var inputBlockExpr = @"\#region Input(?<input>[^\#]+)\#endregion";
+		var outputBlockExpr = @"\#region Output(?<output>[^\#]+)\#endregion";
+       	string propertyExpr = @"(?<required>\[Required\].*?)?public (?<type>[^\s]+) (?<name>[^\s]+) { get; set; }";
+ 
 		var doc = Regex.Match(source, docExpr, RegexOptions.Singleline).Groups["doc"].Value;
 		var name = Regex.Match(source, classNameExpr).Groups["name"].Value;
 
@@ -53,24 +55,32 @@
 			.Select(line => line.Substring(6, line.Length - 7))
 			.ToList();    
        
-		var inputs = Regex.Match(source, inputExpr, RegexOptions.Singleline)
+		var block = Regex.Match(source, inputBlockExpr, RegexOptions.Singleline)
 			.Groups["input"].Value
-			.Trim()
-			.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-			.Select(line => line.Trim())
-			.Select(line => line.Substring(7))
-			.Select(line => line.Substring(0, line.IndexOf('{')).Split(' '))
-			.Select(line => new { Type = line[0], Name = line[1] })
+			.Trim();
+        
+		var inputs = Regex.Matches(block, propertyExpr, RegexOptions.Singleline)
+			.OfType<Match>()
+			.Select(match => new 
+			{ 
+				Name = match.Groups["name"].Value,
+				Type = match.Groups["type"].Value, 
+				Required = match.Groups["required"].Success,
+			})
 			.ToList();
   
-		var outputs = Regex.Match(source, outputExpr, RegexOptions.Singleline)
+		block = Regex.Match(source, outputBlockExpr, RegexOptions.Singleline)
 			.Groups["output"].Value
-			.Trim()
-			.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-			.Select(line => line.Trim())
-			.Select(line => line.Substring(7))
-			.Select(line => line.Substring(0, line.IndexOf('{')).Split(' '))
-			.Select(line => new { Type = line[0], Name = line[1] })
+			.Trim();
+        
+		var outputs = Regex.Matches(block, propertyExpr, RegexOptions.Singleline)
+			.OfType<Match>()
+			.Select(match => new 
+			{ 
+				Name = match.Groups["name"].Value,
+				Type = match.Groups["type"].Value, 
+				Required = match.Groups["required"].Success,
+			})
 			.ToList();
               
 		var code = Regex.Match(source, codeExpr, RegexOptions.Singleline).Groups["code"].Value;        
@@ -89,7 +99,7 @@
     foreach (var input in inputs)
     {
 #>
-			<<#= input.Name #><#= (input.Type != "string") ? (" ParameterType=\"" + input.Type + "\"") : ""  #> Required="true"/>
+			<<#= input.Name #><#= (input.Type != "string") ? (" ParameterType=\"" + input.Type + "\"") : ""  #> Required="<#= input.Required.ToString().ToLower() #>"/>
 <#
 	}
 #>

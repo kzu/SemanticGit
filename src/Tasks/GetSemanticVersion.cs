@@ -1,6 +1,7 @@
 ﻿namespace SemanticGitFlow
 {
 	using Microsoft.Build.Utilities;
+	using Microsoft.Build.Framework;
 
 	#region Using
 
@@ -41,6 +42,7 @@
 	{
 		#region Input
 
+		[Required]
 		public string Tag { get; set; }
 
 		#endregion

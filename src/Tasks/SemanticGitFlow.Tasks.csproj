@@ -65,6 +65,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>SemanticGitFlow.tt</DependentUpon>
+      <SubType>Designer</SubType>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -79,7 +80,7 @@
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
     <Error Condition="!Exists('..\packages\Clarius.TransformOnBuild.1.1.1\build\Clarius.TransformOnBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Clarius.TransformOnBuild.1.1.1\build\Clarius.TransformOnBuild.targets'))" />
   </Target>
-  <Import Project="..\..\nuget\build\SemanticGitFlow.targets" />
+  <Import Project="..\..\nuget\build\SemanticGitFlow.targets" Condition="'$(Configuration)' == 'Release'" />
   <Target Name="BeforeBuild">
     <ItemGroup>
       <_TextTransform Include="SemanticGitFlow.tt" />

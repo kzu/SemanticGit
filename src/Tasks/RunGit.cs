@@ -26,8 +26,12 @@
 	{
 		#region Input
 
+		[Required]
 		public string Exe { get; set; }
+
 		public string Args { get; set; }
+	
+		[Required]
 		public string WorkingDir { get; set; }
 		
 		#endregion

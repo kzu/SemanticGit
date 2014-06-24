@@ -1,6 +1,7 @@
 ﻿namespace SemanticGitFlow
 {
 	using Microsoft.Build.Utilities;
+	using Microsoft.Build.Framework;
 
 	#region Using
 
@@ -19,6 +20,7 @@
         Input	   - The input text to parse the tags from, from 
 		             a previous run of git.
 		HeadTag    - The current head tag.
+	    HeadTagText- Head tag text override for upcoming releases.
 					 
         [OUT]
 		Tags       - An item list containing items with:
@@ -26,14 +28,32 @@
 					     Text = Tag description
 						 Range = The commit range for the tag 
 						         WRT the previous tag.
+	 
+	Notes: HeadTagText is useful when you want to generate up-to-date 
+	changelog but not use the auto-generated semantic version, but 
+	an upcoming tag (i.e. you're at 1.0.55 but we are about to release
+	1.1.0 and you want the changelog to contain all current commits 
+	and be the definite content for the 1.1.0 release). If you just 
+	tagged and run the task, the generated (new) content with the 
+	updated label wouldn't be included in the tagged release, since 
+	it would have been added on top of the tag. You'd have to delete 
+	the tag and re-apply it with the updated changelog.
+	
+	None of this is needed if you're tagging with the same value 
+	as the changelog-generated one, though.
 	============================================================
 	*/
 	public class ParseSemanticTags : Task
 	{
 		#region Input
 
+		[Required]
 		public string Input { get; set; }
+
+		[Required]
 		public string HeadTag { get; set; }
+
+		public string HeadTagText { get; set; }
 
 		#endregion
 
@@ -131,7 +151,7 @@
 				var parent = allTags.First(t => t.ItemSpec == parentTag);
 				var tag = new TaskItem(HeadTag, new Dictionary<string, string> 
 					{ 
-						{ "Title", match.Groups["Prefix"].Value + headVersion },
+						{ "Title", !string.IsNullOrEmpty(HeadTagText) ? HeadTagText : match.Groups["Prefix"].Value + headVersion },
 						{ "Description", "- HEAD" },
 						{ "IsHead", "true" },
 						{ "IsSemantic", "true"}, 

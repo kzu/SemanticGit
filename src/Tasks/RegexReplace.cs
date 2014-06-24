@@ -1,6 +1,7 @@
 ﻿namespace SemanticGitFlow
 {
 	using Microsoft.Build.Utilities;
+	using Microsoft.Build.Framework;
 
 	#region Using
 
@@ -33,8 +34,13 @@
 	{
 		#region Input
 
+		[Required]
 		public string Input { get; set; }
+
+		[Required]
 		public string Pattern { get; set; }
+
+		[Required]
 		public string Replacement { get; set; }
 
 		#endregion
@@ -50,7 +56,7 @@
 			#region Code
 
 			Output = Regex.Replace(Input, Pattern, Replacement);
-			
+
 			#endregion
 
 			return true;
