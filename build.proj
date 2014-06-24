@@ -18,6 +18,8 @@
          DefaultTargets="Build"
          xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+	<Import Project="nuget\SemanticGit\build\SemanticGit.props" />
+
 	<PropertyGroup>
 		<BuildRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), .gitignore))</BuildRoot>
 		<BuildRoot Condition="!HasTrailingSlash('$(BuildRoot)')">$(BuildRoot)\</BuildRoot>
@@ -26,14 +28,52 @@
 		<BuildPackage>true</BuildPackage>
 		<DownloadNuGetExe>true</DownloadNuGetExe>
 		<TargetDir>$(BuildRoot)</TargetDir>
-		<GenerateChangeLog>true</GenerateChangeLog>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-		<GitHubUrl>https://github.com/kzu/SemanticGitFlow</GitHubUrl>
 	</PropertyGroup>
 
-	<Import Project="src\.nuget\NuGet.targets"/>
-	<Import Project="nuget\build\SemanticGitFlow.props"/>
-	<Import Project="nuget\build\SemanticGitFlow.targets"/>
+	<Import Project="src\.nuget\NuGet.targets" />
+	<Import Project="nuget\SemanticGit\build\SemanticGit.targets" />
+
+	<PropertyGroup>
+		<BuildDependsOn>
+			UpdateChangelog;
+			$(BuildDependsOn)
+		</BuildDependsOn>
+	</PropertyGroup>
+	
+	<!--
+    =============================================================
+              Changelog Generation
+	
+	We need to first transform the T4 templates to get the latest
+	version of the targets, and then we need to invoke ourselves 
+	again, import the projects and generate the changelog. We 
+	do this by conditionally importing and invoking ourselves 
+	via MSBuild using project inheritance.
+	=============================================================
+	-->
+	<Import Project="nuget\SemanticGit.Changelog\build\SemanticGit.Changelog.props" Condition="'$(_ChangeLog)' == 'true'" />
+	<PropertyGroup>
+		<GitHubUrl>https://github.com/kzu/SemanticGit</GitHubUrl>
+	</PropertyGroup>
+	<Import Project="nuget\SemanticGit.Changelog\build\SemanticGit.Changelog.targets" Condition="'$(_ChangeLog)' == 'true'" />
+
+	<Target Name="UpdateChangelog">
+		<!-- First we need to transform the tasks -->
+		<ItemGroup>
+			<_TextTransform Include="nuget\SemanticGit.tt">
+				<OutputFile>nuget\SemanticGit\build\SemanticGit.tasks</OutputFile>
+			</_TextTransform>
+			<_TextTransform Include="nuget\SemanticGit.Changelog.tt">
+				<OutputFile>nuget\SemanticGit.Changelog\build\SemanticGit.Changelog.tasks</OutputFile>
+		</_TextTransform>
+		</ItemGroup>
+
+		<Exec Command="&quot;$(_TransformExe)&quot; -out &quot;$(MSBuildProjectDirectory)\%(_TextTransform.OutputFile)&quot; &quot;$(MSBuildProjectDirectory)\%(_TextTransform.Identity)&quot;" ContinueOnError="false" />
+
+		<!-- Then we run ourselves but with the changelog imports -->
+		<MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="SemanticGit:GenerateChangeLog" Properties="_ChangeLog=true" />
+	</Target>
 
 	<ItemGroup>
 		<NuSpec Include="**\*.nuspec" />
@@ -46,7 +86,7 @@
 	<Target Name="BuildPackage" 
 			Inputs="@(NuSpec)" 
 			Outputs="%(Identity)-BATCH" 
-			DependsOnTargets="CheckPrerequisites;RestorePackages;GetVersion">
+			DependsOnTargets="CheckPrerequisites;RestorePackages;SemanticGit:GetVersion">
 		<PropertyGroup>
 			<ReleaseNotesPath>%(NuSpec.RootDir)%(NuSpec.Directory)ReleaseNotes.txt</ReleaseNotesPath>
 			<ReleaseNotes Condition="Exists('$(ReleaseNotesPath)')">$([System.IO.File]::ReadAllText('$(ReleaseNotesPath)'))</ReleaseNotes>

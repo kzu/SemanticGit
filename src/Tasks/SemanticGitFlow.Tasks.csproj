@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <Import Project="..\..\nuget\build\SemanticGitFlow.props" />
+  <Import Project="..\..\nuget\SemanticGit\build\SemanticGit.props" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -56,17 +56,29 @@
     <Compile Include="RunGit.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-    <None Include="SemanticGitFlow.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>SemanticGitFlow.tasks</LastGenOutput>
-    </None>
-    <None Include="SemanticGitFlow.tasks">
+    <None Include="..\..\nuget\SemanticGit.Changelog.tasks">
+      <Link>SemanticGit.Changelog.tasks</Link>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>SemanticGitFlow.tt</DependentUpon>
-      <SubType>Designer</SubType>
+      <DependentUpon>SemanticGit.Changelog.tt</DependentUpon>
     </None>
+    <None Include="..\..\nuget\SemanticGit.Changelog.tt">
+      <Link>SemanticGit.Changelog.tt</Link>
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SemanticGit.Changelog.tasks</LastGenOutput>
+    </None>
+    <None Include="..\..\nuget\SemanticGit.tasks">
+      <Link>SemanticGit.tasks</Link>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SemanticGit.tt</DependentUpon>
+    </None>
+    <None Include="..\..\nuget\SemanticGit.tt">
+      <Link>SemanticGit.tt</Link>
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SemanticGit.tasks</LastGenOutput>
+    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
@@ -80,12 +92,6 @@
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
     <Error Condition="!Exists('..\packages\Clarius.TransformOnBuild.1.1.1\build\Clarius.TransformOnBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Clarius.TransformOnBuild.1.1.1\build\Clarius.TransformOnBuild.targets'))" />
   </Target>
-  <Import Project="..\..\nuget\build\SemanticGitFlow.targets" Condition="'$(Configuration)' == 'Release'" />
-  <Target Name="BeforeBuild">
-    <ItemGroup>
-      <_TextTransform Include="SemanticGitFlow.tt" />
-    </ItemGroup>
-    <Exec Command="&quot;$(_TransformExe)&quot; -out &quot;$(MSBuildProjectDirectory)\..\..\nuget\build\SemanticGitFlow.tasks&quot; &quot;%(_TextTransform.FullPath)&quot;" Condition="'%(_TextTransform.Identity)' != ''" ContinueOnError="false" />
-  </Target>
+  <Import Project="..\..\nuget\SemanticGit\build\SemanticGit.targets" Condition="'$(Configuration)' == 'Release'" />
   <Import Project="..\packages\Clarius.TransformOnBuild.1.1.1\build\Clarius.TransformOnBuild.targets" Condition="Exists('..\packages\Clarius.TransformOnBuild.1.1.1\build\Clarius.TransformOnBuild.targets')" />
 </Project>

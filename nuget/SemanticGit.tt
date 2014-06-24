@@ -1,0 +1,8 @@
+﻿<#
+    var taskFiles = new[] 
+    { 
+        @"..\src\Tasks\GetSemanticVersion.cs", 
+        @"..\src\Tasks\RunGit.cs",
+    };
+#>
+<#@ include file="SemanticGit.ttinclude" #>

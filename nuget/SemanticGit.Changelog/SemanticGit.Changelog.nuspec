@@ -16,24 +16,26 @@
 -->
 <package>
   <metadata>
-    <id>SemanticGitFlow</id>
+    <id>SemanticGit.Changelog</id>
     <version>1.0</version>
-    <title>Semantic Git Flow</title>
+    <title>Semantic Git Changelog Generator</title>
     <authors>Daniel Cazzulino</authors>
     <owners>danielkzu, kzu</owners>
-    <licenseUrl>https://github.com/kzu/SemanticGitFlow/blob/master/LICENSE</licenseUrl>
-    <projectUrl>https://github.com/kzu/SemanticGitFlow</projectUrl>
-    <iconUrl>https://raw2.github.com/kzu/SemanticGitFlow/master/icon/128.png</iconUrl>
+    <licenseUrl>https://github.com/kzu/SemanticGit/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/kzu/SemanticGit</projectUrl>
+    <iconUrl>https://raw2.github.com/kzu/SemanticGit/master/icon/128.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Automatic changelog generation, version updating, etc., based on SemVer and GitFlow.</description>
+    <description>Automatic changelog generation based on SemVer and GitFlow, with support for GitHub links.</description>
     <releaseNotes>Release Notes:
 
 v0.1.0
 
+* Support overriding the head tag text to generate a log for an upcoming release 
+  that will have a new tag.
 * Basic functionality to generate semantically versioned commit logs
 * Generate GitHub-linked markdown with linked issues and releases/tags
 * Retrieve and parse current branch head version.</releaseNotes>
     <copyright>Copyright 2014</copyright>
-    <tags>git semantic semver msbuild</tags>
+    <tags>git semantic semver msbuild changelog</tags>
   </metadata>
 </package>

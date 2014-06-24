@@ -6,15 +6,6 @@
 <#@ import namespace="System.Text.RegularExpressions" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ output extension=".tasks" #>
-<#
-    var taskFiles = new[] 
-    { 
-        "GetSemanticVersion.cs", 
-        "ParseSemanticTags.cs",
-        "RunGit.cs",
-        "RegexReplace.cs",
-    };
-#>
 <!--
    Copyright 2014 Daniel Cazzulino
 
