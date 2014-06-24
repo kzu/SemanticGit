@@ -1,7 +1,5 @@
 v1.0.0
 - Added missing targets for nugets.
-
-v1.0.0
 - Updated CHANGELOG for v1.0.0 release
 - Fixed improper ordering of tags based on string value rather than actual version
 - Split assemblyinfo generation from changelog generation
