@@ -1,4 +1,9 @@
+## [v1.0.1](https://github.com/kzu/SemanticGit//releases/tag/v1.0.1)
+- Fixed condition on GitHubUrl when no url is specified.
+- Fixed documentation of default value for GenerateChangelog which is true
+
 ## [v1.0.0](https://github.com/kzu/SemanticGit//releases/tag/v1.0.0)
+- Update changelog.
 - Added missing targets for nugets.
 - Updated CHANGELOG for v1.0.0 release
 - Fixed improper ordering of tags based on string value rather than actual version
