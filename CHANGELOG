@@ -1,3 +1,9 @@
+v1.0.0
+- Fixed improper ordering of tags based on string value rather than actual version
+- Split assemblyinfo generation from changelog generation
+- Added test msbuild project
+- Added support for optional and required task properties.
+
 v0.2.8
 - Added missing v0.2.8 change log notes.
 - Update release notes for upcoming 0.2.8 release
@@ -12,10 +18,6 @@ v0.2.4
 - Fix markdown to always contain pseudo tag.
 - Updated changelogs
 - Made changelog consistent whether a tag exists or not for Head
-
-v0.2.8-2-g049b4c2
-- Added test msbuild project
-- Added support for optional and required task properties.
 
 v0.2.0
 - Updated generation of both versions of CHANGELOG
