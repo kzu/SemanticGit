@@ -84,9 +84,12 @@
 
 partial class ThisAssembly
 {
-	public const string Version = "$(_AssemblyVersion)";
-	public const string FileVersion = "$(_AssemblyFileVersion)";
-	public const string InformationalVersion = "$(_AssemblyInformationalVersion)";
+	public const string Version = "$(_AssemblyVersion)"
+	;
+	public const string FileVersion = "$(_AssemblyFileVersion)"
+	;
+	public const string InformationalVersion = "$(_AssemblyInformationalVersion)"
+	;
 }'
 						  Overwrite='true' />
 

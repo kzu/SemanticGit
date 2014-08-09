@@ -1,3 +1,6 @@
+## [v1.0.3](https://github.com/kzu/SemanticGit/releases/tag/v1.0.3)
+- Made the assembly information available to code in the project by generating a ThisAssembly class.
+
 ## [v1.0.2](https://github.com/kzu/SemanticGit/releases/tag/v1.0.2)
 - Fixed wrong release links (had an extra /)
 
