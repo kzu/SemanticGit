@@ -78,10 +78,16 @@
 
 		<WriteLinesToFile File='$(AssemblyInfoFile)'
 						  Lines='
-[assembly: System.Reflection.AssemblyVersion("$(_AssemblyVersion)")]
-[assembly: System.Reflection.AssemblyFileVersion("$(_AssemblyFileVersion)")]
-[assembly: System.Reflection.AssemblyInformationalVersion("$(_AssemblyInformationalVersion)")]
-'
+[assembly: System.Reflection.AssemblyVersion(ThisAssembly.Version)]
+[assembly: System.Reflection.AssemblyFileVersion(ThisAssembly.FileVersion)]
+[assembly: System.Reflection.AssemblyInformationalVersion(ThisAssembly.InformationalVersion)]
+
+partial class ThisAssembly
+{
+	public const string Version = "$(_AssemblyVersion)";
+	public const string FileVersion = "$(_AssemblyFileVersion)";
+	public const string InformationalVersion = "$(_AssemblyInformationalVersion)";
+}'
 						  Overwrite='true' />
 
 		<ItemGroup>
@@ -98,9 +104,15 @@
 
 		<WriteLinesToFile File='$(AssemblyInfoFile)'
 						  Lines='
-&lt;Assembly: System.Reflection.AssemblyVersion("$(_AssemblyVersion)")&gt;
-&lt;Assembly: System.Reflection.AssemblyFileVersion("$(_AssemblyFileVersion)")&gt;
-&lt;Assembly: System.Reflection.AssemblyInformationalVersion("$(_AssemblyInformationalVersion)")&gt;
+&lt;Assembly: System.Reflection.AssemblyVersion(ThisAssembly.Version)&gt;
+&lt;Assembly: System.Reflection.AssemblyFileVersion(ThisAssembly.FileVersion)&gt;
+&lt;Assembly: System.Reflection.AssemblyInformationalVersion(ThisAssembly.InformationalVersion)&gt;
+
+Partial Class ThisAssembly
+    Public Const Version = "$(_AssemblyVersion)"
+    Public Const FileVersion = "$(_AssemblyFileVersion)"
+    Public Const InformationalVersion = "$(_AssemblyInformationalVersion)"
+End Class
 '
 						  Overwrite='true' />
 
