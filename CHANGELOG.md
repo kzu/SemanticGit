@@ -1,3 +1,6 @@
+## [v1.0.5](https://github.com/kzu/SemanticGit/releases/tag/v1.0.5)
+- Properly escape semi-colons when writing to file.
+
 ## [v1.0.4](https://github.com/kzu/SemanticGit/releases/tag/v1.0.4)
 - Fixed missing ; from buggy WriteLinesToFile msbuild task
 

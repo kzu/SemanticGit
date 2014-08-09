@@ -17,10 +17,10 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
 	<PropertyGroup Condition="'$(GenerateAssemblyInfo)' == 'true'">
-		<BuildDependsOn>
+		<CompileDependsOn>
 			SemanticGit:GenerateAssemblyInfo;
-			$(BuildDependsOn);
-		</BuildDependsOn>
+			$(CompileDependsOn);
+		</CompileDependsOn>
 
 		<AssemblyInfoFile Condition="'$(AssemblyInfoFile)' == ''">$(IntermediateOutputPath)AssemblyInfo.g$(DefaultLanguageSourceExtension)</AssemblyInfoFile>
 	</PropertyGroup>
