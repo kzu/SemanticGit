@@ -1,3 +1,6 @@
+## [v1.0.6](https://github.com/kzu/SemanticGit/releases/tag/v1.0.6)
+- Moved assembly info generation to CompileDependsOn
+
 ## [v1.0.5](https://github.com/kzu/SemanticGit/releases/tag/v1.0.5)
 - Properly escape semi-colons when writing to file.
 
