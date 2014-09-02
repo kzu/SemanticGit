@@ -15,7 +15,7 @@
     <RestorePackages>true</RestorePackages>
     <DownloadNuGetExe>true</DownloadNuGetExe>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <NuGetPackageImportStamp>1fbfca9d</NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>96c1e9ee</NuGetPackageImportStamp>
     <GenerateChangeLog>false</GenerateChangeLog>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -90,8 +90,8 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
-    <Error Condition="!Exists('..\packages\Clarius.TransformOnBuild.1.1.1\build\Clarius.TransformOnBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Clarius.TransformOnBuild.1.1.1\build\Clarius.TransformOnBuild.targets'))" />
+    <Error Condition="!Exists('..\packages\Clarius.TransformOnBuild.1.1.3\build\Clarius.TransformOnBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Clarius.TransformOnBuild.1.1.3\build\Clarius.TransformOnBuild.targets'))" />
   </Target>
   <Import Project="..\..\nuget\SemanticGit\build\SemanticGit.targets" Condition="'$(Configuration)' == 'Release'" />
-  <Import Project="..\packages\Clarius.TransformOnBuild.1.1.1\build\Clarius.TransformOnBuild.targets" Condition="Exists('..\packages\Clarius.TransformOnBuild.1.1.1\build\Clarius.TransformOnBuild.targets')" />
+  <Import Project="..\packages\Clarius.TransformOnBuild.1.1.3\build\Clarius.TransformOnBuild.targets" Condition="Exists('..\packages\Clarius.TransformOnBuild.1.1.3\build\Clarius.TransformOnBuild.targets')" />
 </Project>
