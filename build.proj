@@ -101,7 +101,7 @@
 				 Value="$(ReleaseNotes)"
 				 Condition="'$(ReleaseNotes)' != ''" />
 
-		<Exec Command="&quot;$(NuGetCommand)&quot; pack -NoPackageAnalysis &quot;%(NuSpec.FullPath)&quot; -Version &quot;$(_Major).$(_Minor).$(_Patch)$(_PreRelease)&quot;"
+		<Exec Command="&quot;$(NuGetCommand)&quot; pack -NoPackageAnalysis &quot;%(NuSpec.FullPath)&quot; -Version &quot;$(_Major).$(_Minor).$(_Patch)&quot;"
               ContinueOnError="false" />
 
 	</Target>

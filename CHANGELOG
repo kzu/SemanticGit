@@ -1,3 +1,6 @@
+v1.0.7
+- Added actual generated value as a doc comment
+
 v1.0.6
 - Moved assembly info generation to CompileDependsOn
 
