@@ -1,4 +1,5 @@
-## [v1.0.8](https://github.com/kzu/SemanticGit/releases/tag/v1.0.8)
+## [v1.0.9](https://github.com/kzu/SemanticGit/releases/tag/v1.0.9)
+- Updated to latest version of dependencies
 - Fixed build error, and made package version match simple version.
 - Added actual generated value as a doc comment
 

@@ -90,6 +90,8 @@ partial class ThisAssembly
 	public const string FileVersion = "$(_AssemblyFileVersion)"%3b
 	/// &lt;summary&gt;$(_AssemblyInformationalVersion)&lt;/summary&gt;
 	public const string InformationalVersion = "$(_AssemblyInformationalVersion)"%3b
+	/// &lt;summary&gt;$(_Commit)&lt;/summary&gt;
+	public const string Commit = "$(_Commit)"%3b
 }'
 						  Overwrite='true' />
 
