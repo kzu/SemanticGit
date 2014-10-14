@@ -18,7 +18,7 @@
          DefaultTargets="Build"
          xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<Import Project="nuget\SemanticGit\build\SemanticGit.props" />
+	<Import Project="nuget\build\SemanticGit.props" />
 
 	<PropertyGroup>
 		<BuildRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), .gitignore))</BuildRoot>
@@ -26,62 +26,22 @@
 		<TrackFileAccess>false</TrackFileAccess>
 		<SolutionDir>$(BuildRoot)src\</SolutionDir>
 		<BuildPackage>true</BuildPackage>
+		<RestorePackages>true</RestorePackages>
 		<DownloadNuGetExe>true</DownloadNuGetExe>
 		<TargetDir>$(BuildRoot)</TargetDir>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	</PropertyGroup>
 
 	<Import Project="src\.nuget\NuGet.targets" />
-	<Import Project="nuget\SemanticGit\build\SemanticGit.targets" />
-
-	<PropertyGroup>
-		<BuildDependsOn>
-			UpdateChangelog;
-			$(BuildDependsOn)
-		</BuildDependsOn>
-	</PropertyGroup>
-	
-	<!--
-    =============================================================
-              Changelog Generation
-	
-	We need to first transform the T4 templates to get the latest
-	version of the targets, and then we need to invoke ourselves 
-	again, import the projects and generate the changelog. We 
-	do this by conditionally importing and invoking ourselves 
-	via MSBuild using project inheritance.
-	=============================================================
-	-->
-	<Import Project="nuget\SemanticGit.Changelog\build\SemanticGit.Changelog.props" Condition="'$(_ChangeLog)' == 'true'" />
-	<PropertyGroup>
-		<GitHubUrl>https://github.com/kzu/SemanticGit</GitHubUrl>
-	</PropertyGroup>
-	<Import Project="nuget\SemanticGit.Changelog\build\SemanticGit.Changelog.targets" Condition="'$(_ChangeLog)' == 'true'" />
-
-	<Target Name="UpdateChangelog">
-		<!-- First we need to transform the tasks -->
-		<ItemGroup>
-			<_TextTransform Include="nuget\SemanticGit.tt">
-				<OutputFile>nuget\SemanticGit\build\SemanticGit.tasks</OutputFile>
-			</_TextTransform>
-			<_TextTransform Include="nuget\SemanticGit.Changelog.tt">
-				<OutputFile>nuget\SemanticGit.Changelog\build\SemanticGit.Changelog.tasks</OutputFile>
-		</_TextTransform>
-		</ItemGroup>
-
-		<Exec Command="&quot;$(_TransformExe)&quot; -out &quot;$(MSBuildProjectDirectory)\%(_TextTransform.OutputFile)&quot; &quot;$(MSBuildProjectDirectory)\%(_TextTransform.Identity)&quot;" ContinueOnError="false" />
-
-		<!-- Then we run ourselves but with the changelog imports -->
-		<MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="SemanticGit:GenerateChangeLog" Properties="_ChangeLog=true" />
-	</Target>
+	<Import Project="nuget\build\SemanticGit.targets" />
 
 	<ItemGroup>
 		<NuSpec Include="**\*.nuspec" />
 		<PackageConfig Include="**\packages.config" />
 	</ItemGroup>
 	
-    <Target Name="Build" DependsOnTargets="$(BuildDependsOn)" />
-
+	<Target Name="Build" DependsOnTargets="$(BuildDependsOn)" />
+	
 	<!-- Redefined from NuGet.targets since we build differently -->
 	<Target Name="BuildPackage" 
 			Inputs="@(NuSpec)" 
@@ -101,7 +61,7 @@
 				 Value="$(ReleaseNotes)"
 				 Condition="'$(ReleaseNotes)' != ''" />
 
-		<Exec Command="&quot;$(NuGetCommand)&quot; pack -NoPackageAnalysis &quot;%(NuSpec.FullPath)&quot; -Version &quot;$(_Major).$(_Minor).$(_Patch)&quot;"
+		<Exec Command="&quot;$(NuGetCommand)&quot; pack -NoPackageAnalysis &quot;%(NuSpec.FullPath)&quot; -Version &quot;$(_Major).$(_Minor).$(_Patch)$(_PreRelease)&quot;"
               ContinueOnError="false" />
 
 	</Target>
@@ -111,20 +71,5 @@
 		<Message Text="Restoring NuGet packages..." Importance="normal" />
 		<Exec Command="$(NuGetCommand) restore %(PackageConfig.FullPath) -NonInteractive -SolutionDir $(PaddedSolutionDir) -Verbosity quiet" />
 	</Target>
-
-	<PropertyGroup>
-		<_CommonProgramFiles>$(CommonProgramFiles(x86))</_CommonProgramFiles>
-		<_CommonProgramFiles Condition=" '$(_CommonProgramFiles)' == '' ">$(CommonProgramFiles)</_CommonProgramFiles>
-		<TextTransformPath Condition="'$(TextTransformPath)' == ''">$(_CommonProgramFiles)\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\TextTransform.exe</TextTransformPath>
-		<!-- Initial default value -->
-		<_TransformExe>$(TextTransformPath)</_TransformExe>
-		<!-- Cascading probing if file not found -->
-		<_TransformExe Condition="!Exists('$(_TransformExe)')">$(_CommonProgramFiles)\Microsoft Shared\TextTemplating\10.0\TextTransform.exe"</_TransformExe>
-		<_TransformExe Condition="!Exists('$(_TransformExe)')">$(_CommonProgramFiles)\Microsoft Shared\TextTemplating\11.0\TextTransform.exe"</_TransformExe>
-		<_TransformExe Condition="!Exists('$(_TransformExe)')">$(_CommonProgramFiles)\Microsoft Shared\TextTemplating\12.0\TextTransform.exe"</_TransformExe>
-		<!-- Future proof 'til VS2013+2 -->
-		<_TransformExe Condition="!Exists('$(_TransformExe)')">$(_CommonProgramFiles)\Microsoft Shared\TextTemplating\13.0\TextTransform.exe"</_TransformExe>
-		<_TransformExe Condition="!Exists('$(_TransformExe)')">$(_CommonProgramFiles)\Microsoft Shared\TextTemplating\14.0\TextTransform.exe"</_TransformExe>
-	</PropertyGroup>
 
 </Project>

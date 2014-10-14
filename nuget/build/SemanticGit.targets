@@ -16,6 +16,9 @@
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+	<UsingTask TaskName="SemanticGit.Run" AssemblyFile="SemanticGit.Tasks.dll" />
+	<UsingTask TaskName="SemanticGit.GetSemanticVersion" AssemblyFile="SemanticGit.Tasks.dll" />
+
 	<PropertyGroup Condition="'$(GenerateAssemblyInfo)' == 'true'">
 		<CompileDependsOn>
 			SemanticGit:GenerateAssemblyInfo;
@@ -27,18 +30,16 @@
 
 	<PropertyGroup>
 		<!-- Normalize props -->
-		<GitHubUrl Condition="!$(GitHubUrl.EndsWith('/'))">$(GitHubUrl)/</GitHubUrl>
 		<GitRoot Condition="HasTrailingSlash('$(GitRoot)')">$(GitRoot.TrimEnd('\'))</GitRoot>
 	</PropertyGroup>
-
-	<Import Project="SemanticGit.tasks" />
 
 	<ItemGroup>
 		<_HeadInput Include="$(GitRoot)\.git\HEAD;$(GitRoot)\.git\refs\heads\*.*" />
 	</ItemGroup>
 
 	<Target Name="SemanticGit:GenerateAssemblyInfo" 
-			DependsOnTargets="SemanticGit:FormatVersion;SemanticGit:EnsurePathExists;SemanticGit:GenerateAssemblyInfoCS;SemanticGit:GenerateAssemblyInfoVB">
+			DependsOnTargets="SemanticGit:FormatVersion;SemanticGit:EnsurePathExists;SemanticGit:GenerateAssemblyInfoCS;SemanticGit:GenerateAssemblyInfoVB"
+			Condition="'$(GenerateAssemblyInfo)' == 'true'">
 
 		<Error Condition="'$(Language)' != 'C#' AND '$(Language)' != 'VB'"
 			   Text="Only C# and VB languages are supported for semantic assembly info generation from Git." />
@@ -66,7 +67,7 @@
 	<Target Name="SemanticGit:FormatVersion" DependsOnTargets="SemanticGit:GetVersion">
 		<PropertyGroup>
 			<_AssemblyVersion>$(AssemblyVersionFormat.Replace('MAJOR', '$(_Major)').Replace('MINOR', '$(_Minor)').Replace('PATCH', '$(_Patch)'))</_AssemblyVersion>
-			<_AssemblyFileVersion>$(AssemblyFileVersionFormat.Replace('MAJOR', '$(_Major)').Replace('MINOR', '$(_Minor)').Replace('PATCH', '$(_Patch)'))</_AssemblyFileVersion>
+			<_AssemblyFileVersion>$(AssemblyFileVersionFormat.Replace('MAJOR', '$(_Major)').Replace('MINOR', '$(_Minor)').Replace('PATCH', '$(_Patch)').Replace('COMMIT', '$(_Commit)'))</_AssemblyFileVersion>
 			<_AssemblyInformationalVersion>$(AssemblyInformationalVersionFormat.Replace('MAJOR', '$(_Major)').Replace('MINOR', '$(_Minor)').Replace('PATCH', '$(_Patch)').Replace('-PRERELEASE', '$(_PreRelease)'))</_AssemblyInformationalVersion>
 		</PropertyGroup>
 	</Target>
@@ -74,6 +75,7 @@
 	<Target Name="SemanticGit:GenerateAssemblyInfoCS"
 			Inputs="@(_HeadInput)"
 			Outputs="$(AssemblyInfoFile)"
+			DependsOnTargets="SemanticGit:GetProjectGuidString"
 			Condition="'$(Language)' == 'C#'">
 
 		<WriteLinesToFile File='$(AssemblyInfoFile)'
@@ -82,16 +84,23 @@
 [assembly: System.Reflection.AssemblyFileVersion(ThisAssembly.FileVersion)]
 [assembly: System.Reflection.AssemblyInformationalVersion(ThisAssembly.InformationalVersion)]
 
+/// &lt;summary&gt;Provides access to the current assembly information.&lt;/summary&gt;
 partial class ThisAssembly
 {
-	/// &lt;summary&gt;$(_AssemblyVersion)&lt;/summary&gt;
+	/// &lt;summary&gt;Assembly version: $(_AssemblyVersion)&lt;/summary&gt;
 	public const string Version = "$(_AssemblyVersion)"%3b
-	/// &lt;summary&gt;$(_AssemblyFileVersion)&lt;/summary&gt;
+
+	/// &lt;summary&gt;Assembly file version: $(_AssemblyFileVersion)&lt;/summary&gt;
 	public const string FileVersion = "$(_AssemblyFileVersion)"%3b
-	/// &lt;summary&gt;$(_AssemblyInformationalVersion)&lt;/summary&gt;
+	
+	/// &lt;summary&gt;Assembly informational version: $(_AssemblyInformationalVersion)&lt;/summary&gt;
 	public const string InformationalVersion = "$(_AssemblyInformationalVersion)"%3b
-	/// &lt;summary&gt;$(_Commit)&lt;/summary&gt;
+	
+	/// &lt;summary&gt;Git commit of the assembly source: $(_Commit)&lt;/summary&gt;
 	public const string Commit = "$(_Commit)"%3b
+	
+	/// &lt;summary&gt;Assembly unique identifier: $(ProjectGuidString)&lt;/summary&gt;
+	public const string Guid = "$(ProjectGuidString)"%3b						  
 }'
 						  Overwrite='true' />
 
@@ -104,6 +113,7 @@ partial class ThisAssembly
 	<Target Name="SemanticGit:GenerateAssemblyInfoVB"
 			Inputs="@(_HeadInput)"
 			Outputs="$(AssemblyInfoFile)"
+			DependsOnTargets="SemanticGit:GetProjectGuidString"
 			Condition="'$(Language)' == 'VB'">
 
 
@@ -117,6 +127,8 @@ Partial Class ThisAssembly
     Public Const Version = "$(_AssemblyVersion)"
     Public Const FileVersion = "$(_AssemblyFileVersion)"
     Public Const InformationalVersion = "$(_AssemblyInformationalVersion)"
+    Public Const Commit = "$(_Commit)"
+    Public Const Guid = "$(ProjectGuidString)"
 End Class
 '
 						  Overwrite='true' />
@@ -133,14 +145,14 @@ End Class
 			<Output TaskParameter="Major" PropertyName="_Major" />
 			<Output TaskParameter="Minor" PropertyName="_Minor" />
 			<Output TaskParameter="Patch" PropertyName="_Patch" />
-			<Output TaskParameter="Commit" PropertyName="_Commit" />
+			<Output TaskParameter="PreRelease" PropertyName="_PreRelease" />
 		</GetSemanticVersion>
 
-		<PropertyGroup>
-			<_PreRelease Condition="'$(_Commit)' != ''">-$(PreReleasePrefix)$(_Commit)</_PreRelease>
-		</PropertyGroup>
-		
-		<Message Text="Determined current semantic version as $(_Major).$(_Minor).$(_Patch)$(_PreRelease)"
+		<Run Exe="$(GitExe)" Args="log --pretty=format:%h -n 1" WorkingDir="$(MSBuildProjectDirectory)">
+			<Output TaskParameter="Output" PropertyName="_Commit" />
+		</Run>
+
+		<Message Text="Determined default semantic version as $(_Major).$(_Minor).$(_Patch)$(_PreRelease)-$(_Commit)"
 				 Importance="normal" />
 		
 	</Target>
@@ -149,10 +161,10 @@ End Class
 
 		<Error Condition="!Exists('$(GitRoot)\.git')" Text="Directory '$(GitRoot)' is not a git repository. Directory '.git' not found." />
 
-		<RunGit Exe="$(GitExe)" Args="describe --tags" WorkingDir="$(MSBuildProjectDirectory)">
+		<Run Exe="$(GitExe)" Args="describe --tags" WorkingDir="$(MSBuildProjectDirectory)">
 			<Output TaskParameter="Output" PropertyName="_HeadTag" />
-		</RunGit>
-		
+		</Run>
+
 	</Target>
 		
 </Project>

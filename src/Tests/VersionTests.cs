@@ -1,4 +1,4 @@
-﻿namespace SemanticGitFlow
+﻿namespace SemanticGit
 {
 	using NuGet;
 	using Xunit;

@@ -15,35 +15,52 @@
    limitations under the License.
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
+	
 	<!--
     ============================================================
-              ChangeLog Generation
+              AssemblyInfo Generation Properties
 	
-	GenerateChangeLog: Whether to generate the change log on build. 
-	                   Default: true. 
-	ChangeLog:         Change log file name to generate, relative to
-					   the git repository root. Default: CHANGELOG
-	CommitFormat:      Format string for commit messages.
-	                   Default: - %s
-	GitHubUrl:         Optional GitHub repository base Url that 
-					   will cause the commit messages to be parsed 
-					   for #[issue] and turn them to links in the 
-					   generated $(ChangeLog).md file. i.e. 
-					   https://github.com/kzu/SemanticGit
-    HeadTagText:       Optionally override the head tag text to use
-	                   in the change log, useful when generating 
-					   the changelog for an upcoming release that 
-					   will be named different than the automatically
-					   generated semantic version.
+	- GenerateAssemblyInfo
+	Whether to generate the assembly info on build.
+	Default: true
+	
+	Three format string properties are available to generate assembly 
+	info attributes: AssemblyVersionFormat, AssemblyFileVersionFormat 
+	and AssemblyInformationalVersionFormat. If specified, these will 
+	be used to populate the corresponding assembly attribute. 
+	
+	The following replacement tokens can be used in these format 
+	strings:
+	- MAJOR: the major component of a semver git version tag.
+	- MINOR: the minor component of a semver git version tag.
+	- PATCH: the patch component of a semver git version tag.
+	- PRE: optional pre-release component of a semver git version 
+	  tag including the initial '-' separator. If not present,
+	  it's replaced with an empty string.
+	- COMMIT: the commit hash of the current HEAD.
+	
+	Examples:
+	
+	- Given:
+		TAG: v0.1.0-pre
+		AssemblyInformationalVersionFormat: MAJOR.MINOR.PATCH-PRE-COMMIT
+	- Result for the build two commits after creating the tag: 
+		[assembly:AssemblyInformationalVersion("0.1.2-pre-8d07975")]
+	
+	- Given:
+		TAG: v0.1.0 (i.e. we removed the -pre for the current release branch)
+		AssemblyInformationalVersionFormat: MAJOR.MINOR.PATCH-PRE-COMMIT
+	- Result for the build two commits after creating the tag: 
+		[assembly:AssemblyInformationalVersion("0.1.2-8d07975")]
+		(NOTE: no '-pre' is present since it was not found in the tag)
 	
 	============================================================
 	-->
 	<PropertyGroup>
-		<GenerateChangeLog>true</GenerateChangeLog>
-		<ChangeLog>CHANGELOG</ChangeLog>
-		<CommitFormat>- %s</CommitFormat>
-		<HeadTagText></HeadTagText>
+		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+		<AssemblyVersionFormat>MAJOR.MINOR.0</AssemblyVersionFormat>
+		<AssemblyFileVersionFormat>MAJOR.MINOR.PATCH</AssemblyFileVersionFormat>
+		<AssemblyInformationalVersionFormat>MAJOR.MINOR.PATCH-PRE-COMMIT</AssemblyInformationalVersionFormat>
 	</PropertyGroup>
 
 	<!--

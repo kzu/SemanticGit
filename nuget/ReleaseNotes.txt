@@ -1,6 +1,10 @@
 Release Notes:
 
-v0.1.0
+v2.0
+* Added support for pre-release suffix on the semver git tag
+* Simplified token replacement on format strings
+
+v1.0
 
 * Supports VB and C#.
 * Supports formatting the AssemblyVersion, AssemblyFileVersion and AssemblyInformationalVersion.
