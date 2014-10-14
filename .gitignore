@@ -176,3 +176,4 @@ FakesAssemblies/
 /src/.nuget/NuGet.exe
 /*.nupkg
 /src/Tasks/*.t4properties
+/.nuget/NuGet.exe

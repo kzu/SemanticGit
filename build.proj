@@ -15,38 +15,89 @@
    limitations under the License.
 -->
 <Project ToolsVersion="4.0"
+		 InitialTargets="CheckPrerequisites"
          DefaultTargets="Build"
          xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<Import Project="nuget\build\SemanticGit.props" />
+	<Import Project="build.props" Condition="Exists('build.props')" />
 
 	<PropertyGroup>
-		<BuildRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), .gitignore))</BuildRoot>
-		<BuildRoot Condition="!HasTrailingSlash('$(BuildRoot)')">$(BuildRoot)\</BuildRoot>
+		<Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
 		<TrackFileAccess>false</TrackFileAccess>
-		<SolutionDir>$(BuildRoot)src\</SolutionDir>
-		<BuildPackage>true</BuildPackage>
-		<RestorePackages>true</RestorePackages>
-		<DownloadNuGetExe>true</DownloadNuGetExe>
-		<TargetDir>$(BuildRoot)</TargetDir>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(MSBuildProjectDirectory)</SolutionDir>
+		<SolutionDir Condition="!HasTrailingSlash('$(SolutionDir)')">$(SolutionDir)\</SolutionDir>
+		<NuGetExePath Condition="'$(NuGetExePath)' == ''">$(SolutionDir).nuget\nuget.exe</NuGetExePath>
 	</PropertyGroup>
 
-	<Import Project="src\.nuget\NuGet.targets" />
-	<Import Project="nuget\build\SemanticGit.targets" />
-
 	<ItemGroup>
-		<NuSpec Include="**\*.nuspec" />
-		<PackageConfig Include="**\packages.config" />
+		<!-- Solutions at the root directory are all built automatically unless overriden -->
+		<SolutionFile Include="*.sln" Condition="'@(SolutionFile)' == ''" />
+
+		<!-- NuSpec definitions alongside a .csproj cause us to call NuGet Pack on the project instead -->
+		<_PackageProject Include="**\*.csproj">
+			<!-- We must do this metadata annotation here. Inside a target, it doesn't work :( -->
+			<NuSpec>%(RecursiveDir)%(Filename).nuspec</NuSpec>
+		</_PackageProject>
 	</ItemGroup>
-	
+
+	<ItemGroup Condition=" '$(PackageSources)' == '' ">
+		<PackageSource Include="https://nuget.org/api/v2/" />
+
+		<!-- Additional package sources to restore from -->
+		<!--
+		<PackageSource Include="http://www.myget.org/F/b4ff5f68eccf4f6bbfed74f055f88d8f/" />
+		-->
+	</ItemGroup>
+
+	<PropertyGroup>
+		<BuildDependsOn>
+			BeforeBuild;
+			BuildSources;
+			PackageRestore;
+			CoreBuild;
+			AfterBuild;
+		</BuildDependsOn>
+	</PropertyGroup>
+
 	<Target Name="Build" DependsOnTargets="$(BuildDependsOn)" />
-	
+	<Target Name="BeforeBuild" />
+	<Target Name="AfterBuild" />
+
+	<Target Name="CoreBuild" DependsOnTargets="CoreBuildNoVersion;CoreBuildVersion" />
+
+	<Target Name="CoreBuildNoVersion" Condition="'$(Version)' == ''">
+
+		<MSBuild
+			Projects="@(SolutionFile)"
+			Targets="Build"
+			Properties="Configuration=$(Configuration);TrackFileAccess=$(TrackFileAccess)"/>
+
+		<Exec Command='"$(NuGetExePath)" Pack "@(PackageProject)" -NoPackageAnalysis -NonInteractive'
+			  Condition="'%(Identity)' != ''" />
+		<Exec Command='"$(NuGetExePath)" Pack "@(PackageSpec)" -NoPackageAnalysis -NonInteractive'
+			  Condition="'%(Identity)' != ''" />
+
+	</Target>
+
+	<Target Name="CoreBuildVersion" Condition="'$(Version)' != ''">
+
+		<MSBuild
+			Projects="@(SolutionFile)"
+			Targets="Build"
+			Properties="Configuration=$(Configuration);TrackFileAccess=$(TrackFileAccess);Version=$(Version)"/>
+
+		<Exec Command='"$(NuGetExePath)" Pack "@(PackageProject)" -NoPackageAnalysis -NonInteractive -Version $(Version)'
+			  Condition="'%(Identity)' != ''" />
+		<Exec Command='"$(NuGetExePath)" Pack "@(PackageSpec)" -NoPackageAnalysis -NonInteractive -Version $(Version)'
+			  Condition="'%(Identity)' != ''" />
+
+	</Target>
+
 	<!-- Redefined from NuGet.targets since we build differently -->
 	<Target Name="BuildPackage" 
 			Inputs="@(NuSpec)" 
 			Outputs="%(Identity)-BATCH" 
-			DependsOnTargets="CheckPrerequisites;RestorePackages;SemanticGit:GetVersion">
+			DependsOnTargets="RestorePackages;SemanticGit:GetVersion">
 		<PropertyGroup>
 			<ReleaseNotesPath>%(NuSpec.RootDir)%(NuSpec.Directory)ReleaseNotes.txt</ReleaseNotesPath>
 			<ReleaseNotes Condition="Exists('$(ReleaseNotesPath)')">$([System.IO.File]::ReadAllText('$(ReleaseNotesPath)'))</ReleaseNotes>
@@ -66,10 +117,32 @@
 
 	</Target>
 
-	<!-- Redefined from NuGet.targets since we can restore any number of package config files. -->
-	<Target Name="RestorePackages" Condition="'@(PackageConfig)' != ''">
+	<Target Name="PackageRestore">
 		<Message Text="Restoring NuGet packages..." Importance="normal" />
-		<Exec Command="$(NuGetCommand) restore %(PackageConfig.FullPath) -NonInteractive -SolutionDir $(PaddedSolutionDir) -Verbosity quiet" />
+		
+		<Exec Command='"$(NuGetExePath)" restore "%(SolutionFile.Identity)" -NonInteractive -Source @(PackageSource) -Verbosity quiet' />
+
+		<!-- 
+		Add GitHubLink OOB?
+		<Exec Command="&quot;$(NuGetExePath)&quot; install githublink -Pre -Source http://www.myget.org/F/b4ff5f68eccf4f6bbfed74f055f88d8f/ -SolutionDir &quot;$(SolutionDir)&quot; -Verbosity quiet -ExcludeVersion" Condition="!Exists('$(SolutionDir)\packages\githublink\')" />
+		-->
 	</Target>
+
+	<Target Name="BuildSources">
+		<!-- The conditionals on the item metadata don't work outside a target -->
+		<ItemGroup>
+			<!-- We only keep those that do have a nuspec at the .csproj level -->
+			<PackageProject Include="@(_PackageProject)" Condition="Exists('%(NuSpec)')" />
+			<!-- Grab the rest of the spec files. -->
+			<PackageSpec Include="**\*.nuspec" Exclude="@(PackageProject -> '%(NuSpec)')" />
+		</ItemGroup>
+	</Target>
+
+	<Target Name="CheckPrerequisites">
+		<Error Text=".nuget\NuGet.exe does not exist. Run build.ps1 at least once."
+			   Condition="!Exists('.nuget\NuGet.exe')" />
+	</Target>
+
+	<Import Project="build.targets" Condition="Exists('build.targets')" />
 
 </Project>
