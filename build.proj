@@ -126,6 +126,13 @@
 		Add GitHubLink OOB?
 		<Exec Command="&quot;$(NuGetExePath)&quot; install githublink -Pre -Source http://www.myget.org/F/b4ff5f68eccf4f6bbfed74f055f88d8f/ -SolutionDir &quot;$(SolutionDir)&quot; -Verbosity quiet -ExcludeVersion" Condition="!Exists('$(SolutionDir)\packages\githublink\')" />
 		-->
+		
+		<!-- Delete all .nupkg files since they aren't needed anymore and may confuse CI servers about what packages were actually generated -->
+		<ItemGroup>
+			<PackageBinaries Include="**\*.nupkg" />	
+		</ItemGroup>
+	
+		<Delete Files="@(PackageBinaries)" />
 	</Target>
 
 	<Target Name="BuildSources">
