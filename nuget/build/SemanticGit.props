@@ -79,28 +79,4 @@
 		<GitExe Condition="Exists('C:\cygwin\bin\git.exe')">C:\cygwin\bin\git.exe</GitExe>
 	</PropertyGroup>
 
-	<!--
-    ============================================================
-              GitRoot Property
-	
-	This property determines the root of the git repository which 
-	is used to generate the change log, calculate the current 
-	version, etc. If not specified explicitly, it will try to 
-	determine its value from the location of the .gitignore or 
-	.gitattributes file which can exist alongside this targets 
-	file or in any ancestor path.
-	
-	The property never includes the trailing slash.
-	============================================================
-	-->
-	<PropertyGroup Condition="'$(GitRoot)' == ''">
-		<!-- Try .gitignore first -->
-		<GitRoot Condition="Exists('$(MSBuildThisFileDirectory).gitignore')">$(MSBuildThisFileDirectory)</GitRoot>
-		<GitRoot Condition="'$(GitRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), .gitignore))</GitRoot>
-
-		<!-- Try .gitattributes next -->
-		<GitRoot Condition="'$(GitRoot)' == '' AND Exists('$(MSBuildThisFileDirectory).gitattributes')">$(MSBuildThisFileDirectory)</GitRoot>
-		<GitRoot Condition="'$(GitRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), .gitattributes))</GitRoot>
-	</PropertyGroup>
-
 </Project>
