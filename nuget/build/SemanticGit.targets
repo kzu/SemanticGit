@@ -32,10 +32,6 @@
 		<ProjectGuidString>$([System.Guid]::Parse($(ProjectGuid)).ToString())</ProjectGuidString>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<_HeadInput Include="$(GitRoot)\.git\HEAD;$(GitRoot)\.git\refs\heads\*.*" />
-	</ItemGroup>
-	
 	<Target Name="SemanticGit:GenerateAssemblyInfo" 
 			DependsOnTargets="SemanticGit:EnsurePathExists;SemanticGit:GenerateAssemblyInfoCS;SemanticGit:GenerateAssemblyInfoVB"
 			Condition="'$(GenerateAssemblyInfo)' == 'true'">
@@ -175,6 +171,10 @@ End Class
 		<PropertyGroup>
 			<GitRoot>$([System.IO.Path]::GetFullPath($(_GitRoot)))</GitRoot>
 		</PropertyGroup>
+
+		<ItemGroup>
+			<_HeadInput Include="$(GitRoot)\.git\HEAD;$(GitRoot)\.git\refs\heads\*.*" />
+		</ItemGroup>
 
 		<Message Text="Determined Git repository root as '$(GitRoot)'" Importance="normal" />
 
