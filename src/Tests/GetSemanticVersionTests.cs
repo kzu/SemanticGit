@@ -58,6 +58,22 @@
 		}
 
 		[Fact]
+		public void when_tag_has_prerelease_prefix_then_parses_it2()
+		{
+			var task = new GetSemanticVersion
+			{
+				BuildEngine = Mock.Of<IBuildEngine>(),
+				// This is the format that git describe --tags renders.
+				Tag = "v3.9.0-preview-32-g87331c5",
+			};
+
+			task.Execute();
+
+			Assert.Equal("-preview", task.PreRelease);
+			Assert.Equal("32", task.Patch);
+		}
+
+		[Fact]
 		public void when_tag_has_prerelease_but_no_commits_on_top_then_patch_matches_tag()
 		{
 			var task = new GetSemanticVersion
