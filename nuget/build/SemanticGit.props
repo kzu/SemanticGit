@@ -79,6 +79,7 @@
 		<GitExe Condition="'$(GitExe)' == '' And Exists('C:\cygwin\bin\git.exe')">C:\cygwin\bin\git.exe</GitExe>
 		<!-- Ultimately, just try the exe and hope it exists in the PATH already -->
 		<GitExe Condition="'$(GitExe)' == ''">git.exe</GitExe>
+		<GitExe Condition="'$(OS)' != 'Windows_NT'">git</GitExe>
 	</PropertyGroup>
 
 </Project>
