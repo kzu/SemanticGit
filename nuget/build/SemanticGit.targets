@@ -16,8 +16,6 @@
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<Import Project="SemanticGit.tasks" />
-	
 	<PropertyGroup Condition="'$(GenerateAssemblyInfo)' == 'true'">
 		<CompileDependsOn>
 			SemanticGit:GetHead;
@@ -178,5 +176,7 @@ End Class
 		<Message Text="Determined Git repository root as '$(GitRoot)'" Importance="normal" />
 
 	</Target>
+
+	<Import Project="SemanticGit.tasks" />
 
 </Project>

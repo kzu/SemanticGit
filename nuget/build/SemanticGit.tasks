@@ -16,7 +16,7 @@
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<Import Project="Clarius.VisualStudio.Inline.tasks" Condition="'$(OS)' == 'Windows_NT'" />
-	<Import Project="Clarius.VisualStudio.Compiled.tasks" Condition="'$(OS)' != 'Windows_NT'" />
+	<Import Project="SemanticGit.Inline.tasks" Condition="'$(OS)' == 'Windows_NT'" />
+	<Import Project="SemanticGit.Compiled.tasks" Condition="'$(OS)' != 'Windows_NT'" />
 
 </Project>
