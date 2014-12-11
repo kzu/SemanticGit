@@ -1,4 +1,4 @@
-SemanticGitFlow
+SemanticGit
 ===============
 
-Automatic changelog generation, version updating, etc., based on SemVer and GitFlow
+Automatic versioning based on SemVer-formated Git tags.
