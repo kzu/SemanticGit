@@ -106,10 +106,10 @@
 
 	<!--
     ============================================================
-              RunGit Task
+              Run Task
 	
         [IN]
-        Exe	       - The path to Git.exe
+        Exe	       - The path to the executable
 		Args       - The command line arguments to git
 		WorkingDir - The base directory to use to run git.
 
@@ -118,7 +118,7 @@
 	============================================================
 	-->
 
-	<UsingTask TaskName="RunGit" TaskFactory="CodeTaskFactory" AssemblyFile="$(CodeTaskAssembly)">
+	<UsingTask TaskName="Run" TaskFactory="CodeTaskFactory" AssemblyFile="$(CodeTaskAssembly)">
 
 		<ParameterGroup>
 			<Exe Required="true"/>
