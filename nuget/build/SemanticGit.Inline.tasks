@@ -16,6 +16,14 @@
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+	<PropertyGroup>
+		<CodeTaskAssembly Condition="'$(MSBuildAssemblyVersion)' == ''">$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll</CodeTaskAssembly>
+		<!-- In VS2013, the assembly contains the VS version. -->
+		<CodeTaskAssembly Condition="'$(MSBuildAssemblyVersion)' == '12.0'">$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll</CodeTaskAssembly>
+		<!-- In VS2015+, the assembly was renamed, hopefully this will be the last condition! -->
+		<CodeTaskAssembly Condition="'$(MSBuildAssemblyVersion)' != '' and '$(MSBuildAssemblyVersion)' &gt;= '14.0'">$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll</CodeTaskAssembly>
+	</PropertyGroup>
+
 	<!--
     ============================================================
               GetSemanticVersion Task
@@ -44,10 +52,7 @@
                  928e945.
 	============================================================
 	-->
-	<UsingTask
-		TaskName="GetSemanticVersion"
-		TaskFactory="CodeTaskFactory"
-		AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll">
+	<UsingTask TaskName="GetSemanticVersion" TaskFactory="CodeTaskFactory" AssemblyFile="$(CodeTaskAssembly)">
 
 		<ParameterGroup>
 			<Tag Required="true"/>
@@ -113,10 +118,7 @@
 	============================================================
 	-->
 
-	<UsingTask
-		TaskName="RunGit"
-		TaskFactory="CodeTaskFactory"
-		AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll">
+	<UsingTask TaskName="RunGit" TaskFactory="CodeTaskFactory" AssemblyFile="$(CodeTaskAssembly)">
 
 		<ParameterGroup>
 			<Exe Required="true"/>
