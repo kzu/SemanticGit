@@ -16,9 +16,8 @@
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<UsingTask TaskName="SemanticGit.Run" AssemblyFile="SemanticGit.Tasks.dll" />
-	<UsingTask TaskName="SemanticGit.GetSemanticVersion" AssemblyFile="SemanticGit.Tasks.dll" />
-
+	<Import Project="SemanticGit.tasks" />
+	
 	<PropertyGroup Condition="'$(GenerateAssemblyInfo)' == 'true'">
 		<CompileDependsOn>
 			SemanticGit:GetHead;
