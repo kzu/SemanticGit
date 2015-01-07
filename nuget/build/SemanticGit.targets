@@ -58,6 +58,7 @@
 	
 	<Target Name="SemanticGit:FormatVersion" DependsOnTargets="SemanticGit:GetVersion">
 		<PropertyGroup>
+			<PackageVersion>$(PackageVersionFormat.Replace('MAJOR', '$(_Major)').Replace('MINOR', '$(_Minor)').Replace('PATCH', '$(_Patch)').Replace('-PRE', '$(_PreRelease)').Replace('COMMIT', '$(_Commit)'))</PackageVersion>
 			<AssemblyVersion>$(AssemblyVersionFormat.Replace('MAJOR', '$(_Major)').Replace('MINOR', '$(_Minor)').Replace('PATCH', '$(_Patch)'))</AssemblyVersion>
 			<AssemblyFileVersion>$(AssemblyFileVersionFormat.Replace('MAJOR', '$(_Major)').Replace('MINOR', '$(_Minor)').Replace('PATCH', '$(_Patch)'))</AssemblyFileVersion>
 			<AssemblyInformationalVersion>$(AssemblyInformationalVersionFormat.Replace('MAJOR', '$(_Major)').Replace('MINOR', '$(_Minor)').Replace('PATCH', '$(_Patch)').Replace('-PRE', '$(_PreRelease)').Replace('COMMIT', '$(_Commit)'))</AssemblyInformationalVersion>

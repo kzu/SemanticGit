@@ -58,6 +58,7 @@
 	-->
 	<PropertyGroup>
 		<GenerateAssemblyInfo Condition="'$(GenerateAssemblyInfo)' == ''">true</GenerateAssemblyInfo>
+		<PackageVersionFormat Condition="'$(PackageVersionFormat)' == ''">MAJOR.MINOR.PATCH</PackageVersionFormat>
 		<AssemblyVersionFormat Condition="'$(AssemblyVersionFormat)' == ''">MAJOR.MINOR.0</AssemblyVersionFormat>
 		<AssemblyFileVersionFormat Condition="'$(AssemblyFileVersionFormat)' == ''">MAJOR.MINOR.PATCH</AssemblyFileVersionFormat>
 		<AssemblyInformationalVersionFormat Condition="'$(AssemblyInformationalVersionFormat)' == ''">MAJOR.MINOR.PATCH-PRE-COMMIT</AssemblyInformationalVersionFormat>
