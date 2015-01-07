@@ -16,6 +16,18 @@
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+	<!-- Publicly consumable target to format a string with the determined version values from Git SemVer labels
+         Receives a VersionFormat property and returns a formatted value.
+         The format can contain any of MAJOR, MINOR, PATCH, COMMIT or '-PRE' strings, which will be replaced with their 
+         semver segments.
+	 -->
+	<Target Name="SemanticGit:FormatVersion" DependsOnTargets="SemanticGit:GetVersion" Returns="$(_FormattedVersion)">
+		<PropertyGroup>
+			<_FormattedVersion>$(VersionFormat.Replace('MAJOR', '$(_Major)').Replace('MINOR', '$(_Minor)').Replace('PATCH', '$(_Patch)').Replace('-PRE', '$(_PreRelease)').Replace('COMMIT', '$(_Commit)'))</_FormattedVersion>
+		</PropertyGroup>
+	</Target>
+	
+
 	<PropertyGroup Condition="'$(GenerateAssemblyInfo)' == 'true'">
 		<CompileDependsOn>
 			SemanticGit:GetHead;
@@ -55,8 +67,8 @@
 		<MakeDir Directories="%(_AssemblyInfoFile.RootDir)%(_AssemblyInfoFile.Directory)"
 				 Condition="!Exists('%(_AssemblyInfoFile.RootDir)%(_AssemblyInfoFile.Directory)')" />
 	</Target>
-	
-	<Target Name="SemanticGit:FormatVersion" DependsOnTargets="SemanticGit:GetVersion">
+
+	<Target Name="SemanticGit:ApplyVersionFormats" DependsOnTargets="SemanticGit:GetVersion">
 		<PropertyGroup>
 			<PackageVersion>$(PackageVersionFormat.Replace('MAJOR', '$(_Major)').Replace('MINOR', '$(_Minor)').Replace('PATCH', '$(_Patch)').Replace('-PRE', '$(_PreRelease)').Replace('COMMIT', '$(_Commit)'))</PackageVersion>
 			<AssemblyVersion>$(AssemblyVersionFormat.Replace('MAJOR', '$(_Major)').Replace('MINOR', '$(_Minor)').Replace('PATCH', '$(_Patch)'))</AssemblyVersion>
@@ -68,7 +80,7 @@
 	<Target Name="SemanticGit:GenerateAssemblyInfoCS"
 			Inputs="@(_HeadInput)"
 			Outputs="$(AssemblyInfoFile)"
-			DependsOnTargets="SemanticGit:FormatVersion"
+			DependsOnTargets="SemanticGit:ApplyVersionFormats"
 			Condition="'$(Language)' == 'C#'">
 
 		<WriteLinesToFile File='$(AssemblyInfoFile)'
@@ -106,7 +118,7 @@ partial class ThisAssembly
 	<Target Name="SemanticGit:GenerateAssemblyInfoVB"
 			Inputs="@(_HeadInput)"
 			Outputs="$(AssemblyInfoFile)"
-			DependsOnTargets="SemanticGit:FormatVersion"
+			DependsOnTargets="SemanticGit:ApplyVersionFormats"
 			Condition="'$(Language)' == 'VB'">
 
 
