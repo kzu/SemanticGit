@@ -85,4 +85,7 @@
 		<GitExe>git</GitExe>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<SemanticPropsImported>true</SemanticPropsImported>
+	</PropertyGroup>
 </Project>

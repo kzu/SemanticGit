@@ -26,7 +26,8 @@
 			<_FormattedVersion>$(VersionFormat.Replace('MAJOR', '$(_Major)').Replace('MINOR', '$(_Minor)').Replace('PATCH', '$(_Patch)').Replace('-PRE', '$(_PreRelease)').Replace('COMMIT', '$(_Commit)'))</_FormattedVersion>
 		</PropertyGroup>
 	</Target>
-	
+
+	<Import Project="SemanticGit.props" Condition="'$(SemanticPropsImported)' != 'true'" />
 
 	<PropertyGroup Condition="'$(GenerateAssemblyInfo)' == 'true'">
 		<CompileDependsOn>
@@ -166,9 +167,16 @@ End Class
 
 		<Error Condition="!Exists('$(GitRoot)\.git')" Text="Directory '$(GitRoot)' is not a git repository. Directory '.git' not found." />
 
-		<Run Exe="$(GitExe)" Args="describe --tags" WorkingDir="$(MSBuildProjectDirectory)">
+		<Run Exe="$(GitExe)" Args="describe --tags" WorkingDir="$(MSBuildProjectDirectory)" ContinueOnError="true">
 			<Output TaskParameter="Output" PropertyName="_HeadTag" />
 		</Run>
+
+		<Warning Text="Your current Git repository does not contain any tags. Defaulting to 'v0.1.0' for the current built. Please tag your repository to get consistent and reproducible build numbers."
+				 Condition="'$(_HeadTag)' == ''" />
+
+		<PropertyGroup Condition="'$(_HeadTag)' == ''">
+			<_HeadTag>v0.1.0</_HeadTag>
+		</PropertyGroup>
 
 	</Target>
 
