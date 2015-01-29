@@ -16,6 +16,8 @@
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+	<Import Project="SemanticGit.props" Condition="'$(SemanticPropsImported)' != 'true'" />
+
 	<!-- Publicly consumable target to format a string with the determined version values from Git SemVer labels
          Receives a VersionFormat property and returns a formatted value.
          The format can contain any of MAJOR, MINOR, PATCH, COMMIT or '-PRE' strings, which will be replaced with their 
@@ -27,8 +29,15 @@
 		</PropertyGroup>
 	</Target>
 
-	<Import Project="SemanticGit.props" Condition="'$(SemanticPropsImported)' != 'true'" />
-
+	<!-- Publicly consumable target to retrieve the current git commit SHA -->
+	<Target Name="SemanticGit:GetCommit" DependsOnTargets="SemanticGit:GetGitRoot" Returns="$(_Sha)">
+				
+		<Run Exe="$(GitExe)" Args="log --pretty=format:%H -n 1" WorkingDir="$(MSBuildProjectDirectory)">
+			<Output TaskParameter="Output" PropertyName="_Sha" />
+		</Run>
+		
+	</Target>	
+	
 	<PropertyGroup Condition="'$(GenerateAssemblyInfo)' == 'true'">
 		<CompileDependsOn>
 			SemanticGit:GetHead;
