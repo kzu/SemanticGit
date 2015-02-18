@@ -25,6 +25,6 @@
 	</PropertyGroup>
 
 	<Import Project="SemanticGit.Inline.tasks" Condition="'$(UseCompiledTasks)' == 'false'" />
-	<Import Project="SemanticGit.Compiled.tasks" Condition="'$(UseCompiledTasks)' != 'true'" />
+	<Import Project="SemanticGit.Compiled.tasks" Condition="'$(UseCompiledTasks)' == 'true'" />
 
 </Project>
