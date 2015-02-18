@@ -16,7 +16,15 @@
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<Import Project="SemanticGit.Inline.tasks" Condition="'$(OS)' == 'Windows_NT'" />
-	<Import Project="SemanticGit.Compiled.tasks" Condition="'$(OS)' != 'Windows_NT'" />
+	<!-- For whatever reason, you can just force compiled tasks just by setting $(UseCompiledTasks) = 'true' -->
+	<PropertyGroup Condition="'$(UseCompiledTasks)' == ''">
+		<!-- Windows/MSBuild supports inline code tasks, so we don't use the compile tasks -->
+		<UseCompiledTasks  Condition="'$(OS)' == 'Windows_NT'">false</UseCompiledTasks>
+		<!-- Mac/xbuild does not ;) -->
+		<UseCompiledTasks  Condition="'$(OS)' != 'Windows_NT'">true</UseCompiledTasks>
+	</PropertyGroup>
+
+	<Import Project="SemanticGit.Inline.tasks" Condition="'$(UseCompiledTasks)' == 'false'" />
+	<Import Project="SemanticGit.Compiled.tasks" Condition="'$(UseCompiledTasks)' != 'true'" />
 
 </Project>
