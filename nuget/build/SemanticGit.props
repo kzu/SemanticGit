@@ -85,6 +85,19 @@
 		<GitExe>git</GitExe>
 	</PropertyGroup>
 
+	<!--
+	============================================================
+              CygPathExe Property
+	
+	If we are using cygwin git, we need to pipe the path to
+	cygpath to convert it into a Windows path. If the path is
+	already a Windows path, it will be returned unchanged.
+	============================================================
+	-->
+	<PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+		<CygPathExe Condition="'$(CygPathExe)' == '' And Exists('C:\cygwin\bin\cygpath.exe')">C:\cygwin\bin\cygpath.exe</CygPathExe>
+	</PropertyGroup>
+
 	<PropertyGroup>
 		<SemanticPropsImported>true</SemanticPropsImported>
 	</PropertyGroup>
