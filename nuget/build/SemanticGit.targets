@@ -195,6 +195,10 @@ End Class
 			<Output TaskParameter="Output" PropertyName="_GitRoot" />
 		</Run>
 
+		<Run Exe="$(CygPathExe)" Args="-w $(_GitRoot)" WorkingDir="$(MSBuildProjectDirectory)" Condition="'$(CygPathExe)' != ''">
+			<Output TaskParameter="Output" PropertyName="_GitRoot" />
+		</Run>
+
 		<PropertyGroup>
 			<GitRoot>$([System.IO.Path]::GetFullPath($(_GitRoot)))</GitRoot>
 		</PropertyGroup>
