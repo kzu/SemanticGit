@@ -17,9 +17,16 @@ namespace SemanticGit
 	{
 		private static readonly Regex missingSemicolon = new Regex("\"$", RegexOptions.Multiline);
 
+		/// <summary>
+		/// The file to apply the fixups to.
+		/// </summary>
 		[Required]
 		public ITaskItem File { get; set; }
 
+		/// <summary>
+		/// Fixes up missing semi-colons in xbuild since it does not recognize any of the 
+		/// escape characters for the ';' character.
+		/// </summary>
 		public override bool Execute()
 		{
 			var contents = System.IO.File.ReadAllText(File.ItemSpec);
