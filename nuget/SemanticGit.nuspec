@@ -28,15 +28,16 @@
     <description>Automatic AssemblyInfo generation, based on SemVer and Git tags.</description>
     <releaseNotes>Release Notes:
 
-v1.0
+v2.0
 * Added support for pre-release suffix on the semver git tag
 * Simplified token replacement on format strings
 
-v0.1
+v1.0
 
 * Supports VB and C#.
 * Supports formatting the AssemblyVersion, AssemblyFileVersion and AssemblyInformationalVersion.
-* Automatically generate assembly information attributes on build, in the intermediate output path.</releaseNotes>
+* Automatically generate assembly information attributes on build, in the intermediate output path.
+</releaseNotes>
     <copyright>Copyright 2014</copyright>
     <tags>git semantic semver msbuild</tags>
   </metadata>

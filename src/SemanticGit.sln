@@ -5,27 +5,23 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{68082BD7-D596-4DFF-813A-1F60409A837A}"
 	ProjectSection(SolutionItems) = preProject
-		nuget\ReleaseNotes.txt = nuget\ReleaseNotes.txt
-		nuget\build\SemanticGit.Compiled.tasks = nuget\build\SemanticGit.Compiled.tasks
-		nuget\build\SemanticGit.Inline.tasks = nuget\build\SemanticGit.Inline.tasks
-		nuget\SemanticGit.nuspec = nuget\SemanticGit.nuspec
-		nuget\build\SemanticGit.props = nuget\build\SemanticGit.props
-		nuget\build\SemanticGit.targets = nuget\build\SemanticGit.targets
-		nuget\build\SemanticGit.tasks = nuget\build\SemanticGit.tasks
+		..\nuget\build\SemanticGit.Compiled.tasks = ..\nuget\build\SemanticGit.Compiled.tasks
+		..\nuget\build\SemanticGit.Inline.tasks = ..\nuget\build\SemanticGit.Inline.tasks
+		..\nuget\SemanticGit.nuspec = ..\nuget\SemanticGit.nuspec
+		..\nuget\build\SemanticGit.props = ..\nuget\build\SemanticGit.props
+		..\nuget\build\SemanticGit.targets = ..\nuget\build\SemanticGit.targets
+		..\nuget\build\SemanticGit.tasks = ..\nuget\build\SemanticGit.tasks
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{97BD13EF-5093-419E-9425-0F5CC12C702F}"
 	ProjectSection(SolutionItems) = preProject
 		build.proj = build.proj
-		build.props = build.props
-		build.ps1 = build.ps1
-		build.targets = build.targets
 		packages.config = packages.config
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticGit.Tasks", "src\Tasks\SemanticGit.Tasks.csproj", "{0DB23F8E-BC89-4146-95FE-C7EFE70D63EE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticGit.Tasks", "Tasks\SemanticGit.Tasks.csproj", "{0DB23F8E-BC89-4146-95FE-C7EFE70D63EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticGit.Tests", "src\Tests\SemanticGit.Tests.csproj", "{8ADB72B7-4F70-42EE-8E4C-95F80316293E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticGit.Tests", "Tests\SemanticGit.Tests.csproj", "{8ADB72B7-4F70-42EE-8E4C-95F80316293E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

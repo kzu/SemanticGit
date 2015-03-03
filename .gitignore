@@ -177,3 +177,4 @@ FakesAssemblies/
 /*.nupkg
 /src/Tasks/*.t4properties
 /.nuget/NuGet.exe
+*.metaproj
