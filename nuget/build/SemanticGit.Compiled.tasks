@@ -20,14 +20,14 @@
          due to a bug in xbuild, we need to fixup the generated assembly info and add 
 		 missing semicolons at the end of each line.
 	-->
-	<PropertyGroup Condition="'$(GenerateAssemblyInfo)' == 'true'">
+	<PropertyGroup Condition="'$(GenerateAssemblyInfo)' == 'true' And '$(IsXBuild)' == 'true'">
 		<CompileDependsOn>
 			$(CompileDependsOn);
 			XBuildFixup
 		</CompileDependsOn>
 	</PropertyGroup>
 
-	<Target Name="XBuildFixup" BeforeTargets="CoreCompile">
+	<Target Name="XBuildFixup">
 		<FixupCode File="$(AssemblyInfoFile)" />
 	</Target>
 	

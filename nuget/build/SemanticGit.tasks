@@ -16,12 +16,17 @@
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+	<PropertyGroup>
+		<!-- XBuild does not define the MSBuildRuntimeVersion property. -->
+		<IsXBuild Condition="'$(MSBuildRuntimeVersion)' == ''">true</IsXBuild>
+	</PropertyGroup>
+
 	<!-- For whatever reason, you can just force compiled tasks just by setting $(UseCompiledTasks) = 'true' -->
 	<PropertyGroup Condition="'$(UseCompiledTasks)' == ''">
 		<!-- Windows/MSBuild supports inline code tasks, so we don't use the compile tasks -->
-		<UseCompiledTasks  Condition="'$(OS)' == 'Windows_NT'">false</UseCompiledTasks>
+		<UseCompiledTasks  Condition="'$(IsXBuild)' != 'true'">false</UseCompiledTasks>
 		<!-- Mac/xbuild does not ;) -->
-		<UseCompiledTasks  Condition="'$(OS)' != 'Windows_NT'">true</UseCompiledTasks>
+		<UseCompiledTasks  Condition="'$(IsXBuild)' == 'true'">true</UseCompiledTasks>
 	</PropertyGroup>
 
 	<Import Project="SemanticGit.Inline.tasks" Condition="'$(UseCompiledTasks)' == 'false'" />
