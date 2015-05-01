@@ -28,6 +28,20 @@
 		}
 
 		[Fact]
+		public void when_tag_has_no_commits_on_top_then_commits_output_is_zero()
+		{
+			var task = new GetSemanticVersion
+			{
+				BuildEngine = Mock.Of<IBuildEngine>(),
+				Tag = "v1.0.2",
+			};
+
+			task.Execute();
+
+			Assert.Equal("0", task.Commits);
+		}
+
+		[Fact]
 		public void when_tag_has_commits_then_adds_them_to_patch()
 		{
 			var task = new GetSemanticVersion
@@ -41,6 +55,22 @@
 
 			Assert.Equal("8", task.Patch);
 		}
+
+		[Fact]
+		public void when_tag_has_commits_then_commits_output_equals_label_commits()
+		{
+			var task = new GetSemanticVersion
+			{
+				BuildEngine = Mock.Of<IBuildEngine>(),
+				// This is the format that git describe --tags renders.
+				Tag = "v1.0.2-6-g778787d",
+			};
+
+			task.Execute();
+
+			Assert.Equal("6", task.Commits);
+		}
+
 
 		[Fact]
 		public void when_tag_has_prerelease_prefix_then_parses_it()

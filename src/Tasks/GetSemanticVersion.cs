@@ -1,14 +1,9 @@
-﻿using Microsoft.Build.Utilities;
-using Microsoft.Build.Framework;
+﻿using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+using System.Text.RegularExpressions;
 
 namespace SemanticGit
 {
-	#region Using
-
-	using System.Text.RegularExpressions;
-
-	#endregion
-
 	/*
     ============================================================
               GetSemanticVersion Task
@@ -25,6 +20,9 @@ namespace SemanticGit
 	Major      - The MAJOR component of the semver git tag
 	Minor      - The MINOR component of the semver git tag
 	Patch      - The PATCH component of the semver git tag
+	Commits    - The numer of commits on top of the semver 
+	             git tag. '0' if the HEAD is at the tag itself.
+	             Useful for conditional version formats.
 	PreRelease - Optional pre-release component of a semver
 	             git version tag including the initial '-' 
 	             separator.
@@ -61,46 +59,45 @@ namespace SemanticGit
 	/// 	(NOTE: no '-pre' is present since it was not found in the tag)
 	/// </example>
 	/// </remarks>
-	public partial class GetSemanticVersion : Task
+	public class GetSemanticVersion : Task
 	{
-		#region Input
-
 		/// <summary>
 		/// Gets or sets the currently described tag.
 		/// </summary>
 		[Required]
 		public string Tag { get; set; }
 
-		#endregion
-
-		#region Output
-
 		/// <summary>
-		/// Gets or sets the MAJOR component of the semver git tag.
+		/// Gets the MAJOR component of the semver git tag.
 		/// </summary>
 		[Output]
 		public string Major { get; set; }
 
 		/// <summary>
-		/// Gets or sets the MINOR component of the semver git tag.
+		/// Gets the MINOR component of the semver git tag.
 		/// </summary>
 		[Output]
 		public string Minor { get; set; }
-	
+
 		/// <summary>
-		/// Gets or sets the PATCH component of the semver git tag.
+		/// Gets the PATCH component of the semver git tag.
 		/// </summary>
 		[Output]
 		public string Patch { get; set; }
-		
+
+		/// <summary>
+		/// Gets the numer of commits after the semver git tag. 
+		/// Will be '0' if the HEAD is at the tag itself.
+		/// </summary>
+		[Output]
+		public string Commits { get; set; }
+
 		/// <summary>
 		/// Gets or sets then optional pre-release component of a semver
 		/// git version tag including the initial '-' separator.
 		/// </summary>
 		[Output]
 		public string PreRelease { get; set; }
-
-		#endregion
 
 		/// <summary>
 		/// Parses the tag and determines the individual components of the 
@@ -133,12 +130,17 @@ namespace SemanticGit
 			Major = match.Groups["Major"].Value;
 			Minor = match.Groups["Minor"].Value;
 			PreRelease = match.Groups["PreRelease"].Value;
+			Commits = "0";
 
 			var patch = int.Parse(match.Groups["Patch"].Value);
 
 			// If there are commits on top, we add them to the patch number.
 			if (match.Groups["Commits"].Success)
-				patch += int.Parse(match.Groups["Commits"].Value);
+			{
+				var commits = int.Parse(match.Groups["Commits"].Value);
+				patch += commits;
+				Commits = commits.ToString();
+			}
 
 			Patch = patch.ToString();
 

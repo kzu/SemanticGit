@@ -19,7 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		packages.config = packages.config
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticGit.Tasks", "Tasks\SemanticGit.Tasks.csproj", "{0DB23F8E-BC89-4146-95FE-C7EFE70D63EE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticGit", "Tasks\SemanticGit.csproj", "{0DB23F8E-BC89-4146-95FE-C7EFE70D63EE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemanticGit.Tests", "Tests\SemanticGit.Tests.csproj", "{8ADB72B7-4F70-42EE-8E4C-95F80316293E}"
 EndProject

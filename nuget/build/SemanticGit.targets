@@ -160,6 +160,7 @@ End Class
 			<Output TaskParameter="Major" PropertyName="_Major" />
 			<Output TaskParameter="Minor" PropertyName="_Minor" />
 			<Output TaskParameter="Patch" PropertyName="_Patch" />
+			<Output TaskParameter="Commits" PropertyName="_Commits" />
 			<Output TaskParameter="PreRelease" PropertyName="_PreRelease" />
 		</GetSemanticVersion>
 

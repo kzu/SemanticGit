@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using Microsoft.Build.Framework;
+﻿using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace SemanticGit
 {
@@ -15,13 +11,11 @@ namespace SemanticGit
 	/// </summary>
 	public class FixupCode : Task
 	{
-		private static readonly Regex missingSemicolon = new Regex("\"$", RegexOptions.Multiline);
-
 		/// <summary>
 		/// The file to apply the fixups to.
 		/// </summary>
 		[Required]
-		public ITaskItem File { get; set; }
+		public Microsoft.Build.Framework.ITaskItem File { get; set; }
 
 		/// <summary>
 		/// Fixes up missing semi-colons in xbuild since it does not recognize any of the 
@@ -29,6 +23,7 @@ namespace SemanticGit
 		/// </summary>
 		public override bool Execute()
 		{
+			var missingSemicolon = new Regex("\"$", RegexOptions.Multiline);
 			var contents = System.IO.File.ReadAllText(File.ItemSpec);
 			var replaced = missingSemicolon.Replace(contents, "\";");
 

@@ -1,14 +1,9 @@
-﻿namespace SemanticGit
+﻿using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+using System.Diagnostics;
+
+namespace SemanticGit
 {
-	using Microsoft.Build.Framework;
-	using Microsoft.Build.Utilities;
-
-	#region Using
-
-	using System.Diagnostics;
-
-	#endregion
-
 	/*
     ============================================================
               Run Task
@@ -29,37 +24,29 @@
 	/// </summary>
 	public class Run : Task
 	{
-		#region Input
-
 		/// <summary>
-		/// Gets or sets the path to the executable.
+		/// The path to the executable
 		/// </summary>
 		[Required]
 		public string Exe { get; set; }
 
 		/// <summary>
-		/// Gets or sets the optional command line arguments to pass.
+		/// The optional command line arguments to pass
 		/// </summary>
 		public string Args { get; set; }
 
 		/// <summary>
-		/// Gets or sets the base directory to use.
+		/// The base directory to use
 		/// </summary>
 		[Required]
 		public string WorkingDir { get; set; }
-		
-		#endregion
-
-		#region Output
 
 		/// <summary>
-		/// Gets or sets the raw text output string from a 
+		/// The raw text output string from a 
 		/// successful run.
 		/// </summary>
 		[Output]
 		public string Output { get; set; }
-
-		#endregion
 
 		/// <summary>
 		/// Executes the specified executable in the given working 
@@ -68,8 +55,6 @@
 		/// </summary>
 		public override bool Execute()
 		{
-			#region Code
-
 			var psi = new ProcessStartInfo
 			{
 				CreateNoWindow = true,
@@ -93,8 +78,6 @@
 				Log.LogError(errors);
 				return false;
 			}
-
-			#endregion
 
 			return true;
 		}

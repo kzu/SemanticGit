@@ -70,9 +70,9 @@
     <None Include="Test.proj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Tasks\SemanticGit.Tasks.csproj">
+    <ProjectReference Include="..\Tasks\SemanticGit.csproj">
       <Project>{0db23f8e-bc89-4146-95fe-c7efe70d63ee}</Project>
-      <Name>SemanticGit.Tasks</Name>
+      <Name>SemanticGit</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
