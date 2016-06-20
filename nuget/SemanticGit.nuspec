@@ -18,15 +18,18 @@
   <metadata>
     <id>SemanticGit</id>
     <version>1.0.0</version>
-    <title>Semantic Git Versioning</title>
+    <title>Semantic Git Versioning (obsoleted by GitInfo)</title>
     <authors>Daniel Cazzulino</authors>
     <owners>danielkzu, kzu</owners>
     <licenseUrl>https://github.com/kzu/SemanticGit/blob/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/kzu/SemanticGit</projectUrl>
     <iconUrl>https://raw2.github.com/kzu/SemanticGit/master/icon/128.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Automatic AssemblyInfo generation, based on SemVer and Git tags.</description>
+    <description>[Obsolete("Use GitInfo instead ;)")] Automatic AssemblyInfo generation, based on SemVer and Git tags.</description>
     <releaseNotes>Release Notes:
+
+v2.2
+* Show Obsolete in description, point users to GitInfo now.
 
 v2.0
 * Added support for pre-release suffix on the semver git tag
